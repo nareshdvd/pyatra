@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% block extrastyle %}
+
+    {% endblock %}
+  </head>
+  <body>
+    {% if flash_data.status == 'success' %}
+      {{ flash_data.message }}
+    {% else %}
+      {{ flash_data.message }}
+    {% endif %}
+    {% block yatra_block %}
+
+    {% endblock %}
+    <script type="text/javascript" src="/static/yatra/jquery.min.js"></script>
+    {% block extrajs %}
+
+    {% endblock %}
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{% extends 'yatra/layout.html' %}
+
+{% block yatra_block %}
+  <div>
+    {% for category in template_categories %}
+      <a href="/yatra/select/category/{{category.id}}">{{category.title}}</a>
+    {% endfor %}
+  </div>
+
+{% endblock %}

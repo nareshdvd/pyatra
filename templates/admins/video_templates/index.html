@@ -1,0 +1,61 @@
+{% extends 'admins/layout.html' %}
+{% load  commontags %}
+{% block page_wrapper %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Video Templates</h1>
+    </div>
+  </div>
+  <div class="row" style="margin-bottom: 5px">
+    <div class="col-sm-12">
+      <a href="{% url 'admins:new_video_template' %}" class="pull-right btn btn-sm btn-primary">Add New</a>
+    </div>
+  </div>
+  {% include 'common/partials/alert-message.html' %}
+  <div class="row">
+    <div class="col-lg-12">
+      <table class="table table-bordered table-striped">
+        <tbody>
+          <tr class="th-row">
+            <th>
+              Title
+            </th>
+            <th>
+              Category
+            </th>
+            <th>
+              Demo File
+            </th>
+            <th>
+              Project Compressed File
+            </th>
+            <th>
+              Actions
+            </th>
+          </tr>
+          {% for video_template in video_templates %}
+            <tr>
+              <td>
+                {{ video_template.title }}
+              </td>
+              <td>
+                {% for category in video_template.categories.all %}
+                  {{ category.title }},
+                {% endfor %}
+              </td>
+              <td>
+                {{ video_template.demo_file.url }}
+              </td>
+              <td>
+                {{ video_template.project_compressed_file.url }}
+              </td>
+              <td>
+                <a href="/admins/video_templates/{{ video_template.id }}/edit">Edit</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

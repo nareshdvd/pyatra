@@ -1,0 +1,46 @@
+{% load commontags %}
+  {% if item_type == "image" %}
+    <div class="inner">
+      <div class="image-container" data-fiid="fi_{{item_info.file_name}}">
+        <div class="inner">
+          <form enctype="multipart/form-data" id="form_image_{{item_info.file_name}}">
+            <input type="hidden" name="file_number" value="{{item_info.file_name}}" class="file_number_input"/>
+            <input type="hidden" name="file_type" value="{{item_info.file_type}}" class="file_type_input"/>
+            {% if not item %}
+              <label for="fi_{{item_info.file_name}}">
+                Select Image
+                <input name="fi_{{item_info.file_name}}" data-itemselected='false' type="file" id="fi_{{item_info.file_name}}"/>
+              </label>
+            {% else %}
+              <label for="fi_{{item_info.file_name}}">
+                <img src="{{item.attachment.url}}?ts={{''|timestamp}}" width="100px"/>
+                <input name="fi_{{item_info.file_name}}" data-itemselected='false' type="file" id="fi_{{item_info.file_name}}"/>
+              </label>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="inner">
+      <div class="image-container" data-fiid="fi_{{item_info.file_name}}">
+        <div class="inner">
+          <form enctype="multipart/form-data" id="form_image_{{item_info.file_name}}">
+            <input type="hidden" name="file_number" value="{{item_info.file_name}}" class="file_number_input"/>
+            <input type="hidden" name="file_type" value="{{item_info.file_type}}" class="file_type_input"/>
+            {% if not item %}
+              <label for="fi_{{item_info.file_name}}">
+                Select Video
+                <input name="fi_{{item_info.file_name}}" data-itemselected='false' type="file" id="fi_{{item_info.file_name}}"/>
+              </label>
+            {% else %}
+              <label for="fi_{{item_info.file_name}}">
+                <img src="{{item.attachment.url}}?ts={{''|timestamp}}" width="100px"/>
+                <input name="fi_{{item_info.file_name}}" data-itemselected='false' type="file" id="fi_{{item_info.file_name}}"/>
+              </label>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}

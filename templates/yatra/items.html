@@ -1,0 +1,28 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/items.css"/>
+{% endblock %}
+
+{% block yatra_block %}
+  {% for grouped_item_info in video_template.get_items_info|grouped_in:4 %}
+    <div class="group-container">
+      {% for item_info in grouped_item_info %}
+        {% if item_info.file_type == 'image' %}
+          <div class="item-box image-item-container">
+            {% include 'yatra/ajax_item.html' with item_info=item_info item=items|get_ordered_item:item_info.file_name item_type="image" %}
+          </div>
+        {% elif item_info.file_type == 'video' %}
+          <div class="item-box video-item-container">
+            <div class="inner">
+              {% include 'yatra/ajax_item.html' with item_info=item_info item=items|get_ordered_item:item_info.file_name item_type="video" %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+{% endblock %}
+{% block extrajs %}
+  <script type="text/javascript" src="/static/yatra/items.js"></script>
+{% endblock %}
