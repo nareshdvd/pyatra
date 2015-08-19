@@ -270,15 +270,10 @@ class VideoSession(models.Model):
 
   @classmethod
   def get_or_generate(cls, user, video_template):
-    object = cls.objects.filter(user=user, video_template=video_template).first()
-    if object is None:
-      object = cls(**{
-        'session_id' : object.session_id,
-        'user_id' : user.id,
-        'video_template_id' : video_template.id,
-        'timestamp' : timestamp
-      })
-      object.save()
+    try:
+      object = cls.objects.get(user=user, video_template=video_template)
+    except:
+      object = cls.generate(user, video_template)
     return object
 
   def remove(self):
@@ -347,22 +342,22 @@ class YatraContent(models.Model):
     resized_path = os.path.join(MEDIA_ROOT, 'uploads', self.video_session.session_id, 'resized', '{}_{}.{}'.format(self.content_order, width_height, 'jpeg'))
     resized_url = '/media/uploads/{}/resized/{}_{}.{}'.format(self.video_session.session_id, self.content_order, width_height, 'jpeg')
     if os.path.exists(resized_path):
+      os.remove(resized_path)
+
+    if self.content_type == "IMAGE":
+      width = int(width_height.split('X')[0])
+      height = int(width_height.split('X')[1])
+      path = self.attachment.path
+      image = Image.open(path)
+      # tmppath = '/tmp/' + path.replace('/','_')
+
+      if image.mode not in ("L", "RGB"):
+        image = image.convert("RGB")
+      image = image.resize((width,height), Image.ANTIALIAS)
+      image.save(resized_path, "jpeg", quality=90)
       return resized_url
     else:
-      if self.content_type == "IMAGE":
-        width = int(width_height.split('X')[0])
-        height = int(width_height.split('X')[1])
-        path = self.attachment.path
-        image = Image.open(path)
-        # tmppath = '/tmp/' + path.replace('/','_')
-
-        if image.mode not in ("L", "RGB"):
-          image = image.convert("RGB")
-        image = image.resize((width,height), Image.ANTIALIAS)
-        image.save(resized_path, "jpeg", quality=90)
-        return resized_url
-      else:
-        return self.attachment.url
+      return self.attachment.url
 
 
   def resize(self):

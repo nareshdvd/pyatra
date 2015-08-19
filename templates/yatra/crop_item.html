@@ -1,0 +1,17 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/cropper/cropper.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/crop_item.css"/>
+{% endblock %}
+{% block yatra_block %}
+  <img class="filter-image-original" src="{{item|get_resized:'600X337'}}?ts={{''|timestamp}}" data-caman-hidpi="{{item|get_resized:'600X337'}}?ts={{''|timestamp}}"/>
+  <button id="crop">Crop</button>
+{% endblock %}
+
+{% block extrajs %}
+  <script type="text/javascript" src="/static/yatra/cropper/cropper.js"></script>
+  <script type="text/javascript" src="/static/yatra/caman/caman.full.js"></script>
+  <script type="text/javascript" src="/static/yatra/csrf.js"></script>
+  <script type="text/javascript" src="/static/yatra/crop_item.js"></script>
+{% endblock %}

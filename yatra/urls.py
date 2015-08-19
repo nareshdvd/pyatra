@@ -9,5 +9,7 @@ urlpatterns = [
   url(r'^select/template/(?P<id>[0-9]+)$', views.select_template, name="select_template_post"),
   url(r'^items$', views.items, name="yatra_items"),
   url(r'^items/(?P<item_number>[0-9]+)$', views.get_item, name="get_item"),
+  url(r'^items/(?P<item_number>[0-9]+)/crop$', views.get_item_crop, name="get_item_crop"),
+  url(r'^items/(?P<item_number>[0-9]+)/save_crop$', views.post_item_crop, name="post_item_crop"),
   url(r'^items/save$', views.save_item, name="save_item")
 ]

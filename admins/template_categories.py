@@ -85,7 +85,7 @@ def update(request, id):
     'description' : 'is_not_empty'
   }
 
-  if 'cover_image' in request.FILES:
+  if 'cover_image' in request.FILES.dict().keys():
     post_data['cover_image'] = request.FILES['cover_image']
     validations['cover_image'] = 'is_image'
   validator = FormValidator(post_data, validations)
@@ -100,12 +100,21 @@ def update(request, id):
     post_data['id']
     response = FlashedRedirect('/admins/template_categories/{}/edit'.format(id), request, flash_data, post_data)
   else:
-    cover_image = post_data['cover_image']
-    del post_data['cover_image']
+    if 'cover_image' in post_data.keys():
+      cover_image = post_data['cover_image']
+      del post_data['cover_image']
+    else:
+      cover_image = None
     VideoTemplateCategory.objects.filter(pk=id).update(**post_data)
     template_category = VideoTemplateCategory.objects.get(pk=id)
-    template_category.cover_image = cover_image
-    template_category.save()
+    if cover_image is not None:
+      try:
+        import os
+        os.remove(template_category.cover_image.path)
+      except:
+        pass
+      template_category.cover_image = cover_image
+      template_category.save()
     flash_data = {
       'status' : 'success',
       'message' : 'Template Category updated successfully'

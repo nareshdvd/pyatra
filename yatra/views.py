@@ -79,7 +79,7 @@ def templates(request):
 def select_template(request, id):
   try:
     template = VideoTemplate.objects.get(pk=id)
-    video_session = VideoSession.generate(request.user, template)
+    video_session = VideoSession.get_or_generate(request.user, template)
     request.session['video_session_id'] = video_session.id
     redirect_url = '/yatra/items'
     flash_data = {}
@@ -149,5 +149,67 @@ def get_item(request, item_number):
     return render_to_response('yatra/ajax_item.html', response_dict, RequestContext(request))
   else:
     return render_to_response('yatra/item.html', response_dict, RequestContext(request))
+
+def get_item_crop(request, item_number):
+  video_session_id = request.session['video_session_id']
+  video_session = VideoSession.objects.get(pk=video_session_id)
+  video_template = video_session.video_template
+  item = video_session.viewablecontents.filter(content_order=item_number).first()
+  items_info = video_template.get_items_info()
+  item_info = items_info[int(item_number) - 1]
+  response_dict = {
+    'item' : item,
+    'item_info' : item_info
+  }
+  if request.is_ajax():
+    return render_to_response('yatra/crop_item.html', response_dict, RequestContext(request))
+  else:
+    return render_to_response('yatra/crop_item.html', response_dict, RequestContext(request))
+
+from PIL import Image, ImageOps
+def post_item_crop(request, item_number):
+  video_session_id = request.session['video_session_id']
+  video_session = VideoSession.objects.get(pk=video_session_id)
+  video_template = video_session.video_template
+  item = video_session.viewablecontents.filter(content_order=item_number).first()
+  items_info = video_template.get_items_info()
+  item_info = items_info[int(item_number) - 1]
+
+  post_data = request.POST.dict()
+  crop_x = float(post_data['x'])
+  crop_y = float(post_data['y'])
+  crop_width = float(post_data['width'])
+  crop_height = float(post_data['height'])
+  ui_width = 600
+  ui_height = 337
+
+  orig_width = 1920
+  orig_height = 1080
+
+  scale_width = ((orig_width)/(ui_width*1.0))
+  scale_height = ((orig_height)/(ui_height*1.0))
+  print scale_width
+  print scale_height
+  import math
+  left = int(math.ceil(crop_x * scale_width))
+  top = int(math.ceil(crop_y * scale_height))
+  right = int(math.ceil(left + (crop_width  * scale_width)))
+  bottom = int(math.ceil(top + (crop_height * scale_height)))
+
+  path = item.attachment.path
+  new_path = item.attachment.path.replace(".jpeg", "_cropped.jpeg")
+  print new_path
+  image = Image.open(path)
+  if image.mode not in ("L", "RGB"):
+    image = image.convert("RGB")
+  image = image.crop((left, top, right, bottom))
+  image = image.rotate(180+90)
+  image.save(new_path, "jpeg", quality=100)
+  return JsonResponse({'status' : 'success', 'message' : 'cropped successfully'})
+
+
+
+
+
 
 

@@ -1,206 +1,97 @@
 {% extends 'yatra/layout.html' %}
 {% load commontags %}
 {% block extrastyle %}
-  <link rel="stylesheet" type="text/css" href="/static/yatra/items.css"/>
-  <link rel="stylesheet" type="text/css" href="/static/yatra/caman.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.theme.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/item.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/cropper/cropper.css"/>
 {% endblock %}
 {% block yatra_block %}
-
-  <div id="Content">
-  <h3>Interactive Example</h3>
-  <p>Choose a filter and move the slider to see it in action. This is only a sample of the full power of CamanJS.</p>
-
-  <img id="example" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
-
-  <!-- <canvas data-caman-hidpi="" id="example" width="600" height="401" data-caman-id="0"></canvas> -->
-
-  <div id="Filters">
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>brightness</p>
+  <div class="image-editor-container">
+    <div class="image-div">
+      <img class="filter-image-original" src="{{item.attachment.url}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
+      <img class="filter-image-temp" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
+      <img class="filter-image-canvas" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}" width="600" height="337"/>
+    </div>
+    <div class="filters-div">
+      <div class="normal-filters">
+        <div>
+          <div class="left">
+            Brightness
+          </div>
+          <div class="right">
+            <div class="slider-filter brightness" data-min="-20" data-max="20" data-filter="brightness"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Contrast
+          </div>
+          <div class="right">
+            <div class="slider-filter contrast" data-min="-20" data-max="20" data-filter="contrast"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Vibrance
+          </div>
+          <div class="right">
+            <div class="slider-filter vibrance" data-min="-20" data-max="20" data-filter="vibrance"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Saturation
+          </div>
+          <div class="right">
+            <div class="slider-filter saturation" data-min="-20" data-max="20" data-filter="saturation"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Hue
+          </div>
+          <div class="right">
+            <div class="slider-filter hue" data-min="-20" data-max="20" data-filter="hue"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Sepia
+          </div>
+          <div class="right">
+            <div class="slider-filter sepia" data-min="-20" data-max="20" data-filter="sepia"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Noise
+          </div>
+          <div class="right">
+            <div class="slider-filter noise" data-min="-20" data-max="20" data-filter="noise"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Blur
+          </div>
+          <div class="right">
+            <div class="slider-filter stackBlur" data-min="0" data-max="10" data-filter="stackBlur"></div>
+          </div>
+        </div>
       </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="brightness" value="0" step="1" max="100" min="-100">
-        <span class="FilterValue">5</span>
+      <div class="preset-filters">
+        <button data-filter="sunrise" class="filter-btn">Sincity</button>
+        <button class="rotate-btn">Rotate</button>
       </div>
     </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>contrast</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="contrast" value="0" step="1" max="100" min="-100">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>saturation</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="saturation" value="0" step="1" max="100" min="-100">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>vibrance</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="vibrance" value="0" step="1" max="100" min="-100">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>exposure</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="exposure" value="0" step="1" max="100" min="-100">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>hue</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="hue" value="0" step="1" max="100" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>sepia</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="sepia" value="0" step="1" max="100" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>gamma</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="gamma" value="0" step="0.1" max="10" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>noise</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="noise" value="0" step="1" max="100" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>clip</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="clip" value="0" step="1" max="100" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>sharpen</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="sharpen" value="0" step="1" max="100" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-    <div class="Filter">
-      <div class="FilterName">
-        <p>stackBlur</p>
-      </div>
-
-      <div class="FilterSetting">
-        <input type="range" data-filter="stackBlur" value="0" step="1" max="20" min="0">
-        <span class="FilterValue">0</span>
-      </div>
-    </div>
-
-
-  <div class="Clear"></div>
   </div>
 
-  <h3>Preset Examples</h3>
-  <p>CamanJS has a number of preset filters that show off how to generate consistent effects on many types of images.</p>
-  <img id="preset-example" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
-  <!-- <canvas data-caman-hidpi="http://localhost:8000{{item.attachment.url}}" id="preset-example" width="600" height="600" data-caman-id="1"></canvas> -->
-
-  <div id="PresetFilters">
-
-    <a data-preset="vintage">Vintage</a>
-
-    <a data-preset="lomo">Lomo</a>
-
-    <a data-preset="clarity">Clarity</a>
-
-    <a data-preset="sinCity">Sin City</a>
-
-    <a data-preset="sunrise">Sunrise</a>
-
-    <a data-preset="crossProcess">Cross Process</a>
-
-    <a data-preset="orangePeel">Orange Peel</a>
-
-    <a data-preset="love">Love</a>
-
-    <a data-preset="grungy">Grungy</a>
-
-    <a data-preset="jarques">Jarques</a>
-
-    <a data-preset="pinhole">Pinhole</a>
-
-    <a data-preset="oldBoot">Old Boot</a>
-
-    <a data-preset="glowingSun">Glowing Sun</a>
-
-    <a data-preset="hazyDays">Hazy Days</a>
-
-    <a data-preset="herMajesty">Her Majesty</a>
-
-    <a data-preset="nostalgia">Nostalgia</a>
-
-    <a data-preset="hemingway">Hemingway</a>
-
-    <a data-preset="concentrate">Concentrate</a>
-
-  </div>
-</div>
-<form class="item_form">
-<button type="submit">Save</button>
-</form>
 {% endblock %}
+
 {% block extrajs %}
-  <script type="text/javascript" src="/static/yatra/caman.js"></script>
+  <script type="text/javascript" src="/static/yatra/jquery-ui/jquery-ui.js"></script>
+  <script type="text/javascript" src="/static/yatra/caman/caman.full.js"></script>
+  <script type="text/javascript" src="/static/yatra/cropper/cropper.js"></script>
+  <script type="text/javascript" src="/static/yatra/item.js"></script>
 {% endblock %}

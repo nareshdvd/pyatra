@@ -1,0 +1,46 @@
+.image-editor-container{
+  margin-top: 50px;
+
+}
+
+.image-div{
+  width:600px;
+  margin: 0 auto;
+}
+
+
+.slider-filter label {
+  position: absolute;
+  width: 20px;
+  margin-top: 20px;
+  margin-left: -9px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.slider-filter{
+  margin-bottom: 25px;
+}
+
+.filter-image-original, .filter-image-temp{
+  display: none;
+}
+
+.normal-filters{
+  width: 100%;
+}
+.normal-filters > div{
+  width: 100%;
+  min-height: 50px;
+}
+
+.normal-filters > div > .left{
+  width: 10%;
+  float: left;
+}
+.normal-filters > div > .right{
+  width: 80%;
+  float: right;
+  margin-right: 10px;
+}
+
