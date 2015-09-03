@@ -19,7 +19,7 @@ def categories(request):
     flash_data = request.flash_data
   except:
     flash_data = {}
-  template_categories = VideoTemplateCategory.objects.all()
+  template_categories = Category.objects.all()
   response_dict = {
     'flash_data' : flash_data,
     'template_categories' : template_categories
@@ -30,7 +30,7 @@ def categories(request):
 @token_user_only
 def select_category(request, id):
   try:
-    category = VideoTemplateCategory.objects.get(pk=id)
+    category = Category.objects.get(pk=id)
     request.session['selected_category_id'] = id
     flash_data = {}
     redirect_url = '/yatra/templates'
@@ -48,7 +48,7 @@ def select_category(request, id):
 def templates(request):
 
   category_id = request.session['selected_category_id']
-  category = VideoTemplateCategory.objects.get(pk=category_id)
+  category = Category.objects.get(pk=category_id)
   category_templates = category.category_templates.all()
   if category_templates.count() == 0:
     flash_data = {
@@ -79,7 +79,7 @@ def templates(request):
 @token_user_only
 def select_template(request, category_id, id):
   try:
-    template = VideoTemplate.objects.get(pk=id)
+    template = Template.objects.get(pk=id)
     video_session = VideoSession.get_or_generate(request.user, template)
     request.session['video_session_id'] = video_session.id
     request.session['category_id'] = category_id
@@ -108,7 +108,7 @@ def items(request):
   video_session = VideoSession.objects.get(pk=video_session_id)
   items = YatraContent.objects.filter(video_session=video_session)
   video_template = video_session.video_template
-  category = VideoTemplateCategory.objects.get(pk=category_id)
+  category = Category.objects.get(pk=category_id)
   response_dict = {
     'video_session' : video_session,
     'category' : category,
