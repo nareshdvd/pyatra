@@ -1,0 +1,168 @@
+{% extends 'yatra/modal_layout.html' %}
+{% load commontags %}
+{% block modal_id%}upload_modal{% endblock %}
+{% block modal_title %}
+  Upload/Edit {% if item_info.file_type == 'image' %}Image{% else %}Video{% endif %} {{ item_info.file_name }}
+{% endblock %}
+
+{% block modal_body %}
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="item-preview-box">
+          {% if item %}
+            {% if item.is_image %}
+              <img class="filter-image-canvas" src="{{ item|get_resized:'600X337' }}"  data-caman-hidpi="{{ item|get_resized:'600X337' }}" width="600"/>
+              <img id="original-image-canvas" src="{{item.attachment.url}}" data-caman-hidpi="{{item.attachment.url}}"/>
+            {% else %}
+              <video src="{{ item.attachment.url }}" style="width: 100%" controls></video>
+            {% endif %}
+          {% else %}
+            {% if item_info.file_type == 'image' %}
+              <img class="template-example-image" src="{{ item_info.tmp_path }}" style="width: 100%"/>
+            {% else %}
+              <video src="{{ item_info.tmp_path }}" style="width: 100%" controls></video>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="filters-div">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a id="filters-tab" href="#normal-filters" aria-controls="normal-filters" role="tab" data-toggle="tab">Filters</a></li>
+            <li role="presentation"><a id="presets-tab" href="#preset-filters" aria-controls="preset-filters" role="tab" data-toggle="tab">Presets</a></li>
+            <li role="presentation"><a id="crop-tab" href="#crop-tabpanel" aria-controls="crop-tabpanel" role="tab" data-toggle="tab">Crop</a></li>
+            <li role="presentation">
+              <a id="upload-tab" href="#upload-tabpanel" aria-controls="upload-tabpanel" role="tab" data-toggle="tab">
+                Upload
+              </a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div id="normal-filters"role="tabpanel" class="normal-filters row tab-pane active">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="left">
+                    Brightness
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter brightness" data-min="-100" data-max="100" data-filter="brightness"></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="left">
+                    Contrast
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter contrast" data-min="-100" data-max="100" data-filter="contrast"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="left">
+                    Vibrance
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter vibrance" data-min="-100" data-max="100" data-filter="vibrance"></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="left">
+                    Saturation
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter saturation" data-min="-100" data-max="100" data-filter="saturation"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="left">
+                    Hue
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter hue" data-min="0" data-max="100" data-filter="hue"></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="left">
+                    Sepia
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter sepia" data-min="0" data-max="100" data-filter="sepia"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="left">
+                    Noise
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter noise" data-min="-20" data-max="20" data-filter="noise"></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="left">
+                    Blur
+                  </div>
+                  <div class="right">
+                    <div class="slider-filter stackBlur" data-min="0" data-max="10" data-filter="stackBlur"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane preset-filters" id="preset-filters">
+              <div class="row">
+                <button data-preset="sunrise" class="col-sm-2 preset-filter new-btn btn-1">Sunrise</button>
+                <button data-preset="vintage" class="col-sm-2 preset-filter new-btn btn-1">Vintage</button>
+                <button data-preset="lomo" class="col-sm-2 preset-filter new-btn btn-1">Lomo</button>
+                <button data-preset="clarity" class="col-sm-2 preset-filter new-btn btn-1">Clarity</button>
+                <button data-preset="sinCity" class="col-sm-2 preset-filter new-btn btn-1">Sin City</button>
+                <button data-preset="pinhole" class="col-sm-2 preset-filter new-btn btn-1">Pinhole</button>
+              </div>
+              <div class="row">
+                <button data-preset="orangePeel" class="col-sm-2 preset-filter new-btn btn-1">Orange Peel</button>
+                <button data-preset="love" class="col-sm-2 preset-filter new-btn btn-1">Love</button>
+                <button data-preset="grungy" class="col-sm-2 preset-filter new-btn btn-1">Grungy</button>
+                <button data-preset="jarques" class="col-sm-2 preset-filter new-btn btn-1">Jarques</button>
+                <button data-preset="pinhole" class="col-sm-2 preset-filter new-btn btn-1">Pin Hole</button>
+                <button data-preset="oldBoot" class="col-sm-2 preset-filter new-btn btn-1">Old Boot</button>
+              </div>
+              <div class="row">
+                <button data-preset="glowingSun" class="col-sm-2 preset-filter new-btn btn-1">Glowing Sun</button>
+                <button data-preset="hazyDays" class="col-sm-2 preset-filter new-btn btn-1">Hazy Days</button>
+                <button data-preset="herMajesty" class="col-sm-2 preset-filter new-btn btn-1">Her Majesty</button>
+                <button data-preset="nostalgia" class="col-sm-2 preset-filter new-btn btn-1">Nostalgia</button>
+                <button data-preset="hemingway" class="col-sm-2 preset-filter new-btn btn-1">Hemingway</button>
+                <button data-preset="concentrate" class="col-sm-2 preset-filter new-btn btn-1">Concentrate</button>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane preset-filters" id="crop-tabpanel">
+              <div style="margin-top: 10px; margin-left:10px">
+                <div id="demo-cropped-image"></div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane upload-tabpanel" id="upload-tabpanel">
+              <form method="post" action="/yatra/save/item">
+                <input type="hidden" name="file_number" value="item_info.file_name"/>
+                <input type="hidden" name="file_type" value="item_info.file_type"/>
+                <label for="fi_{{item_info.file_name}}" id="label-upload-file" class="new-btn">
+                  <input type="file" name="fi_{{item_info.file_name}}" id="fi_{{item_info.file_name}}" data-filenumber="{{item_info.file_name}}"/>Upload
+                </label>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block modal_footer %}
+  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="button" class="btn btn-primary" id="apply_changes" data-itemnumber="{{item_info.file_name}}">Save changes</button>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'admins/layout.html' %}
+{% load  commontags %}
+{% block page_wrapper %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Video Templates</h1>
+    </div>
+  </div>
+  <div class="row" style="margin-bottom: 5px">
+    <div class="col-sm-12">
+      <a href="{% url 'admins:new_template_category' %}" class="pull-right btn btn-sm btn-primary">Add New</a>
+    </div>
+  </div>
+  {% include 'common/partials/alert-message.html' %}
+  <div class="row">
+    <div class="col-lg-12">
+      <table class="table table-bordered table-striped">
+        <tbody>
+          <tr class="th-row">
+            <th>
+              Title
+            </th>
+            <th>
+              Description
+            </th>
+            <th>
+              Cover Image
+            </th>
+            <th>
+              Actions
+            </th>
+          </tr>
+          {% for vtcategory in template_categories %}
+            <tr>
+              <td>
+                {{ vtcategory.title }}
+              </td>
+              <td>
+                {{ vtcategory.description }}
+              </td>
+              <td>
+                <img src="{{ vtcategory.cover_image.url }}" height="100px;">
+              </td>
+              <td>
+              <a href="/admins/template_categories/{{vtcategory.id}}/edit" class="btn btn-danger btn-xs"><i class="fa fa-edit"></i></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

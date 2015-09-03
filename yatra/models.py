@@ -1,36 +1,56 @@
 from django.db import models
 from django.contrib.auth.models import User
-import base64
-from django.db.models import Q
 from lib.classes import FileHandler
-import os
-import shutil
-from pyatra.settings import MEDIA_ROOT
-import subprocess
-from subprocess import Popen
-import time
-import uuid
 from PIL import Image, ImageOps
-import random
-import json
-from os import listdir
-from os.path import isfile, join
+import uuid
+import os
 
-def process(args):
-  pr = Popen(args, stderr=subprocess.STDOUT)
-  pr.wait()
-
-class VideoTemplateCategory(models.Model):
+class Category(models.Model):
   title = models.CharField(max_length=500)
   description = models.TextField(null=True, blank=True, default='')
-  cover_image = models.ImageField(upload_to='category_images', null=True, blank=True, default=None)
+  cover_image = models.ImageField(upload_to='category_images')
 
-class VideoTemplate(models.Model):
+  def resized(self, width_height):
+    resized_dir = os.path.join(MEDIA_ROOT, 'category_images', 'resized')
+    if not os.path.exists(resized_dir):
+      os.mkdir(resized_dir)
+
+    resized_path = os.path.join(MEDIA_ROOT, 'category_images', 'resized', '{}_{}.{}'.format(self.id, width_height, 'jpeg'))
+    resized_url = '/media/{}/resized/{}_{}.{}'.format('category_images', self.id, width_height, 'jpeg')
+    if os.path.exists(resized_path):
+      os.remove(resized_path)
+    path = self.cover_image.path
+    width = int(width_height.split('X')[0])
+    height = int(width_height.split('X')[1])
+    image = Image.open(path)
+    if image.mode not in ("L", "RGB"):
+      image = image.convert("RGB")
+    image = image.resize((width,height), Image.ANTIALIAS)
+    image.save(resized_path, "jpeg", quality=90)
+    return resized_url
+
+class Template(models.Model):
   title = models.CharField(max_length=500)
   demo_file = models.FileField(upload_to='template_demo_videos')
   project_compressed_file = models.FileField(upload_to='zipped_projects')
-  categories = models.ManyToManyField(VideoTemplateCategory, related_name='category_templates')
+  categories = models.ManyToManyField(Category, related_name='category_templates')
   item_positions = models.TextField(null=True, blank=True, default='')
+  variation_id = models.CharField(max_length=100, null=True, blank=True, default=None)
+  main_variation = models.BooleanField(blank=True, default=False)
+  variation_description = models.TextField(null=True, blank=True, default=None)
+
+  #if variation_id is None a new random variation_id is generated otherwise given variation_id is used, so that a relation can be maintained within variations of same template
+  @classmethod
+  def create_new(cls, variation_id=None):
+    main_variation = False
+    if variation_id == None:
+      variation_id=uuid.uuid4()
+      main_variation = True
+    template = Template()
+    template.variation_id=variation_id
+    template.main_variation = main_variation
+    return template
+
 
   @classmethod
   def add(cls, post_data):
@@ -49,19 +69,40 @@ class VideoTemplate(models.Model):
     object = cls(**{
       'title' : post_data['title'],
       'demo_file' : demo_file_path,
-      'project_compressed_file' : project_compressed_file_path
+      'project_compressed_file' : project_compressed_file_path,
+      'variation_id' : post_data['variation_id']
     })
+
+    # print post_data
+    # print post_data['variation_id']
+    # print object.variation_id
+    # return
+    if 'variation_description' in post_data.keys():
+      object.variation_description = post_data['variation_description']
+
+    if 'main_variation' in post_data.keys():
+      if post_data['main_variation'] == 'True' or post_data['main_variation'] == True or post_data['main_variation'] == '1' or post_data['main_variation'] == 1:
+        object.main_variation = True
+      else:
+        object.main_variation = False
     object.save()
     # object.save_ogg_file()
     for cid in post_data['categories']:
-      object.categories.add(VideoTemplateCategory.objects.get(pk=cid))
+      object.categories.add(Category.objects.get(pk=cid))
     return object
+
+  def get_main_variation(self):
+    if self.main_variation == True:
+      return self
+    else:
+      return Template.objects.filter(variation_id=self.variation_id, main_variation=True).first()
 
   @classmethod
   def update(cls, post_data):
-    id = post_data['id']
-    object = cls.objects.get(pk=id)
-    if 'demo_file' in post_data:
+    object = cls.objects.get(pk=post_data['id'])
+    object.title = post_data['title']
+    object.variation_description = post_data['variation_description']
+    if 'demo_file' in post_data.keys() and post_data['demo_file'] != '' and post_data['demo_file'] != None:
       demo_file = post_data['demo_file']
       extension = FileHandler.get_extension(demo_file)
       file_name = '{}.{}'.format(uuid.uuid4(), extension)
@@ -69,7 +110,7 @@ class VideoTemplate(models.Model):
       FileHandler.uploadfile(demo_file, demo_file_path)
       object.demo_file = demo_file_path
 
-    if 'project_compressed_file' in post_data:
+    if 'project_compressed_file' in post_data.keys() and post_data['project_compressed_file'] != '' and post_data['project_compressed_file'] != None:
       project_compressed_file = post_data['project_compressed_file']
       extension = FileHandler.get_extension(project_compressed_file)
       file_name = '{}.{}'.format(uuid.uuid4(), extension)
@@ -82,12 +123,16 @@ class VideoTemplate(models.Model):
     old_categories = [obj.id for obj in object.categories.all()]
     for ocategory in old_categories:
       if ocategory not in post_data['categories']:
-        object.categories.remove(VideoTemplateCategory.objects.get(pk=ocategory))
+        object.categories.remove(Category.objects.get(pk=ocategory))
 
     for cid in post_data['categories']:
       if cid not in old_categories:
-        object.categories.add(VideoTemplateCategory.objects.get(pk=cid))
+        object.categories.add(Category.objects.get(pk=cid))
     return object
+
+
+
+
 
   def remove(self):
     try:
@@ -112,19 +157,6 @@ class VideoTemplate(models.Model):
     for video_session in self.template_video_sessions.all():
       video_session.remove()
     self.delete()
-
-
-  def save_ogg_file(self):
-    path = self.demo_file.path
-    ogg_path = path.replace('.mp4', '.ogg')
-    if not os.path.exists(ogg_path):
-      process([
-        'avconv',
-        '-i',
-        path,
-        ogg_path
-      ])
-
 
   def extract(self, video_session):
     zipped_file_name = self.project_compressed_file.path.split('/')
@@ -182,7 +214,8 @@ class VideoTemplate(models.Model):
     path = self.project_compressed_file.path
     extract_dir = MEDIA_ROOT
     while os.path.exists(extract_dir):
-      extract_dir = os.path.join(MEDIA_ROOT, 'temp_video_templates', str(random.randint(10000000000, 99999999999)))
+      random_dir = str(random.randint(10000000000, 99999999999))
+      extract_dir = os.path.join(MEDIA_ROOT, 'temp_video_templates', random_dir)
     os.makedirs(extract_dir)
     if self.is_zipped():
       process([
@@ -222,24 +255,22 @@ class VideoTemplate(models.Model):
     items_info = []
     i = 0
     for file_item in file_items:
+      tmp_path = '{}/{}'.format(footage_items_dir, file_item)
+      tmp_path = tmp_path.replace(BASE_DIR, '')
       items_info.append({
         'file_name' : file_item.split('.')[0],
         'extension' : file_item.split('.')[1],
-        'file_type' : get_file_type(file_item)
+        'file_type' : get_file_type(file_item),
+        'tmp_path' : tmp_path
       })
       i = i + 1
     self.item_positions = json.dumps(items_info)
     self.save()
-    shutil.rmtree(extract_dir)
-
 
   def get_items_info(self):
     if self.item_positions is None or self.item_positions == '':
       self.set_items_info()
     return json.loads(self.item_positions)
-
-
-
 
   def is_zipped(self):
     return self.project_compressed_file.path.endswith(".zip")
@@ -247,10 +278,11 @@ class VideoTemplate(models.Model):
   def is_tarred(self):
     return self.project_compressed_file.path.endswith(".tar")
 
+
 class VideoSession(models.Model):
   session_id = models.CharField(max_length=255)
   user = models.ForeignKey(User, related_name='video_sessions')
-  video_template = models.ForeignKey(VideoTemplate, related_name='template_video_sessions')
+  video_template = models.ForeignKey(Template, related_name='template_video_sessions')
   timestamp = models.CharField(max_length=255, blank=True, default='')
   video_generated = models.BooleanField(blank=True, default=False)
   video = models.FileField(upload_to='final_videos', null=True, blank=True)
@@ -290,13 +322,26 @@ class VideoSession(models.Model):
       content.remove()
     self.delete()
 
-  # @classmethod
-  # def get(cls, user, session_id, video_template_id):
-  #   return user.video_sessions.filter(session_id=session_id, video_template_id=video_template_id).first()
 
   @property
   def viewablecontents(self):
     return self.contents.filter(Q(content_type='IMAGE')|Q(content_type='VIDEO')).order_by('content_order')
+
+  def add_base64_photo(self, content_order, base64str):
+    converted_image = convert_to_image(base64str)
+    items_info = self.video_template.get_items_info()
+    item_info = items_info[int(content_order)]
+    extension = item_info['extension']
+    file_path = FileHandler.get_video_session_file_path(self, content_order, extension)
+    FileHandler.uploadbase64file(base64str, file_path)
+    content_obj = self.viewablecontents.filter(content_order=content_order).first()
+    if content_obj is None:
+      photo_data['content_type'] = 'IMAGE'
+      photo_data['video_session_id'] = self.id
+      photo_data['attachment'] = file_path
+      photo_data['content_order'] = content_order
+      content_obj = YatraContent(**photo_data)
+    content_obj.save()
 
   def add_photo(self, photo_data):
     attachment = photo_data['attachment']
@@ -310,6 +355,7 @@ class VideoSession(models.Model):
     photo = YatraContent(**photo_data)
     photo.save()
     photo.resize()
+    return photo
 
 
   def add_video(self, video_data):
@@ -323,6 +369,7 @@ class VideoSession(models.Model):
     video_data['attachment'] = file_path
     video = YatraContent(**video_data)
     video.save()
+    return video
 
 class YatraContent(models.Model):
   CONTENT_TYPE = (('IMAGE','IMAGE'), ('AUDIO','AUDIO'), ('VIDEO', 'VIDEO'))
@@ -333,6 +380,16 @@ class YatraContent(models.Model):
   class Meta:
     verbose_name = 'Yatra Content'
     verbose_name_plural = 'Yarta Contents'
+
+  @property
+  def is_image(self):
+    return self.content_type == 'IMAGE'
+
+  @property
+  def is_video(self):
+    return self.content_type == 'VIDEO'
+
+
 
   def resized(self, width_height):
     resized_dir = os.path.join(MEDIA_ROOT, 'uploads', self.video_session.session_id, 'resized')
@@ -387,3 +444,5 @@ class YatraContent(models.Model):
     except:
       pass
     self.delete()
+
+

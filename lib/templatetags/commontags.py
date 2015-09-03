@@ -5,6 +5,11 @@ from pyatra.settings import *
 from PIL import Image
 register = template.Library()
 
+@register.filter(name="increment_by")
+def increment_by(num, increase_by):
+  return num + increase_by
+
+
 @register.filter(name="formated")
 def formated(timestamp, format):
   return datetime.fromtimestamp(float(timestamp)).strftime(format)

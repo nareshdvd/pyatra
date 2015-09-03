@@ -1,0 +1,94 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/item.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/cropper/cropper.css"/>
+{% endblock %}
+{% block yatra_block %}
+  <div class="image-editor-container">
+    <div class="image-div">
+      <img class="filter-image-original" src="{{item.attachment.url}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
+      <img class="filter-image-temp" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}"/>
+      <img class="filter-image-canvas" src="{{item|get_resized:'600X337'}}" data-caman-hidpi="{{item|get_resized:'600X337'}}" width="600" height="337"/>
+    </div>
+    <div class="filters-div">
+      <div class="normal-filters">
+        <div>
+          <div class="left">
+            Brightness
+          </div>
+          <div class="right">
+            <div class="slider-filter brightness" data-min="-20" data-max="20" data-filter="brightness"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Contrast
+          </div>
+          <div class="right">
+            <div class="slider-filter contrast" data-min="-20" data-max="20" data-filter="contrast"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Vibrance
+          </div>
+          <div class="right">
+            <div class="slider-filter vibrance" data-min="-20" data-max="20" data-filter="vibrance"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Saturation
+          </div>
+          <div class="right">
+            <div class="slider-filter saturation" data-min="-20" data-max="20" data-filter="saturation"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Hue
+          </div>
+          <div class="right">
+            <div class="slider-filter hue" data-min="-20" data-max="20" data-filter="hue"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Sepia
+          </div>
+          <div class="right">
+            <div class="slider-filter sepia" data-min="-20" data-max="20" data-filter="sepia"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Noise
+          </div>
+          <div class="right">
+            <div class="slider-filter noise" data-min="-20" data-max="20" data-filter="noise"></div>
+          </div>
+        </div>
+        <div>
+          <div class="left">
+            Blur
+          </div>
+          <div class="right">
+            <div class="slider-filter stackBlur" data-min="0" data-max="10" data-filter="stackBlur"></div>
+          </div>
+        </div>
+      </div>
+      <div class="preset-filters">
+        <button data-filter="sunrise" class="filter-btn">Sincity</button>
+        <button class="rotate-btn">Rotate</button>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extrajs %}
+  <script type="text/javascript" src="/static/yatra/caman/caman.full.js"></script>
+  <script type="text/javascript" src="/static/yatra/cropper/cropper.js"></script>
+  <script type="text/javascript" src="/static/yatra/item.js"></script>
+{% endblock %}

@@ -51,6 +51,18 @@ class FormValidator(object):
           if not self.is_compressed(value):
             self._has_errors = True
             self._error_messages[field] = 'Not a Zipped/Tar Archieve'
+        elif validation == 'is_image_or_empty':
+          if not self.is_image_or_empty(value):
+            self._has_errors = True
+            self._error_messages[field] = 'Not an Image File'
+        elif validation == 'is_video_or_empty':
+          if not self.is_video_or_empty(value):
+            self._has_errors = True
+            self._error_messages[field] = 'Not a Video File'
+        elif validation == 'is_compressed_or_empty':
+          if not self.is_compressed_or_empty(value):
+            self._has_errors = True
+            self._error_messages[field] = 'Not a Zipped/Tar Archieve'
 
   def has_errors(self):
     return self._has_errors
@@ -78,12 +90,23 @@ class FormValidator(object):
     except:
       return False
 
+  def is_image_or_empty(self, file):
+    try:
+      return file.content_type.split('/')[1] in ['jpeg', 'jpg', 'JPG', 'JPEG', 'png', 'PNG']
+    except:
+      return file == u'undefined' or file == ''
+
   def is_video(self, file):
     try:
-      print file.content_type.split('/')[1]
       return file.content_type.split('/')[1] in ['flv', 'mp4']
     except:
       return False
+
+  def is_video_or_empty(self, file):
+    try:
+      return file.content_type.split('/')[1] in ['flv', 'mp4']
+    except:
+      return file == u'undefined' or file == ''
 
   def is_compressed(self, file):
     try:
@@ -91,11 +114,20 @@ class FormValidator(object):
     except:
       return False
 
+  def is_compressed_or_empty(self, file):
+    try:
+      return file.content_type.split('/')[1] in ['zip', 'tar']
+    except:
+      return file == u'undefined' or file == ''
+
   def is_number(self, value):
     return value.isdigit()
 
   def is_array_not_empty(self, value):
     if value.__class__.__name__ == 'list':
-      return len(value) != 0
+      if len(value) == 1 and value[0] == u'null':
+        return False
+      else:
+        return True
     else:
       return False

@@ -1,0 +1,15 @@
+{% ifequal flash_data.status 'success' %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="alert alert-success">{{ flash_data.message }}</div>
+    </div>
+  </div>
+{% else %}
+  {% ifequal  flash_data.status 'error' %}
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="alert alert-danger">{{ flash_data.message }}</div>
+      </div>
+    </div>
+  {% endifequal %}
+{% endifequal %}

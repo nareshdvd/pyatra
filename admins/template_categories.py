@@ -5,12 +5,12 @@ from lib.decorators import *
 from lib.validators import FormValidator
 from lib.classes import FlashedRedirect
 from accounts.models import UsageToken
-from yatra.models import VideoTemplateCategory
+from yatra.models import Category
 
 @admin_only
 @flashable
 def index(request):
-  template_categories = VideoTemplateCategory.objects.all()
+  template_categories = Category.objects.all()
   response_dict = {
     'template_categories' : template_categories
   }
@@ -54,7 +54,7 @@ def save(request):
     }
     response = FlashedRedirect('/admins/template_categories/new', request, flash_data, post_data)
   else:
-    template_category = VideoTemplateCategory(**post_data)
+    template_category = Category(**post_data)
     template_category.save()
     flash_data = {
       'status' : 'success',
@@ -71,7 +71,7 @@ def edit(request, id):
     response_dict['flash_data'] = request.flash_data
     response_dict['form'] = request.form
   except:
-    response_dict['form'] = VideoTemplateCategory.objects.get(pk=id)
+    response_dict['form'] = Category.objects.get(pk=id)
   return render_to_response('admins/template_categories/edit.html', response_dict, RequestContext(request))
 
 @admin_only
@@ -105,8 +105,8 @@ def update(request, id):
       del post_data['cover_image']
     else:
       cover_image = None
-    VideoTemplateCategory.objects.filter(pk=id).update(**post_data)
-    template_category = VideoTemplateCategory.objects.get(pk=id)
+    Category.objects.filter(pk=id).update(**post_data)
+    template_category = Category.objects.get(pk=id)
     if cover_image is not None:
       try:
         import os
@@ -129,7 +129,7 @@ def update(request, id):
 def delete(request, id):
   try:
     #TO DO: while deleting a category, check if this is the only category some of the video templates have, if so then set their category as anonymous category object
-    VideoTemplateCategory.objects.get(pk=id).delete()
+    Category.objects.get(pk=id).delete()
     flash_data = {
       'status' : 'success',
       'message' : 'Template Category deleted successfully'

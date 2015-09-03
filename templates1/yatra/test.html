@@ -1,0 +1,25 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/carousel.css">
+{% endblock %}
+{% block yatra_block %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="carousel-container">
+        <div class="carousel-item">
+          <img src="http://localhost:8000/media/category_images/resized/9_600X337.jpeg"/>
+        </div>
+        <div class="carousel-item">
+          <img src="http://localhost:8000/media/category_images/resized/9_600X337.jpeg"/>
+        </div>
+        <div class="carousel-item">
+          <img src="http://localhost:8000/media/category_images/resized/9_600X337.jpeg"/>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block extrajs %}
+  <script type="text/javascript" src="/static/yatra/carousel.js"></script>
+{% endblock %}

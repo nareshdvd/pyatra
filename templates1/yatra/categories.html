@@ -1,0 +1,24 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block yatra_block %}
+  {% for grouped_item_info in template_categories|grouped_in:3 %}
+    <div class="row category-row">
+    {% for category in grouped_item_info %}
+      <div class="col-sm-4 category-item">
+        <!-- <a href="/yatra/select/category/{{category.id}}"> -->
+          <a href="/yatra/select/category/{{category.id}}" class="category-img-div" style="background-image: url('{{category|get_resized:'600X337'}}'); background-position: 0px -40px;">
+            <div class="inner">
+              <h4>{{category.title|upper}}</h4>
+            </div>
+          </a>
+          <!-- <div class="img-overlay">
+            <h4>{{category.title|upper}}</h4>
+            <a href="/yatra/select/category/{{category.id}}" data-gal="prettyPhoto" class="view-template-btn btn btn-default btn-large">{{"View Templates"|upper}}</a>
+          </div> -->
+        <!-- </a> -->
+      </div>
+    {% endfor %}
+    </div>
+  {% endfor %}
+
+{% endblock %}

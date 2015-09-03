@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/bootstrap/css/bootstrap-theme.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.theme.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/common.css"/>
+    <script type="text/javascript" src="/static/yatra/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/yatra/popcorn.js"></script>
+    {% block extrastyle %}
+
+    {% endblock %}
+  </head>
+  <body id="{% if home %}home-page{% else %}others{% endif %}">
+    {% block bdoverlay %}
+
+    {% endblock %}
+    {% include 'yatra/navbar-top.html' %}
+    <div class="container-fluid main-container">
+    {% block yatra_block %}
+
+    {% endblock %}
+    </div>
+    <script type="text/javascript" src="/static/yatra/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/yatra/jquery-ui/jquery-ui.js"></script>
+    <script type="text/javascript" src="/static/yatra/common.js"></script>
+    <script type="text/javascript" src="/static/yatra/csrf.js"></script>
+    {% block extrajs %}
+
+    {% endblock %}
+  </body>
+</html>

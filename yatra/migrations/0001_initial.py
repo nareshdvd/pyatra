@@ -13,6 +13,29 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Category',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('title', models.CharField(max_length=500)),
+                ('description', models.TextField(default=b'', null=True, blank=True)),
+                ('cover_image', models.ImageField(upload_to=b'category_images')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Template',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('title', models.CharField(max_length=500)),
+                ('demo_file', models.FileField(upload_to=b'template_demo_videos')),
+                ('project_compressed_file', models.FileField(upload_to=b'zipped_projects')),
+                ('item_positions', models.TextField(default=b'', null=True, blank=True)),
+                ('variation_id', models.CharField(default=None, max_length=30, null=True, blank=True)),
+                ('main_variation', models.BooleanField(default=False)),
+                ('variation_description', models.TextField(default=None, null=True, blank=True)),
+                ('categories', models.ManyToManyField(related_name='category_templates', to='yatra.Category')),
+            ],
+        ),
+        migrations.CreateModel(
             name='VideoSession',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -21,25 +44,7 @@ class Migration(migrations.Migration):
                 ('video_generated', models.BooleanField(default=False)),
                 ('video', models.FileField(null=True, upload_to=b'final_videos', blank=True)),
                 ('user', models.ForeignKey(related_name='video_sessions', to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='VideoTemplate',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('title', models.CharField(max_length=500)),
-                ('demo_file', models.FileField(upload_to=b'template_demo_videos')),
-                ('project_compressed_file', models.FileField(upload_to=b'zipped_projects')),
-                ('item_positions', models.TextField(default=b'', null=True, blank=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='VideoTemplateCategory',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('title', models.CharField(max_length=500)),
-                ('description', models.TextField(default=b'', null=True, blank=True)),
-                ('cover_image', models.ImageField(default=None, null=True, upload_to=b'category_images', blank=True)),
+                ('video_template', models.ForeignKey(related_name='template_video_sessions', to='yatra.Template')),
             ],
         ),
         migrations.CreateModel(
@@ -55,15 +60,5 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Yatra Content',
                 'verbose_name_plural': 'Yarta Contents',
             },
-        ),
-        migrations.AddField(
-            model_name='videotemplate',
-            name='categories',
-            field=models.ManyToManyField(related_name='category_templates', to='yatra.VideoTemplateCategory'),
-        ),
-        migrations.AddField(
-            model_name='videosession',
-            name='video_template',
-            field=models.ForeignKey(related_name='template_video_sessions', to='yatra.VideoTemplate'),
         ),
     ]

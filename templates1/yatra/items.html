@@ -1,0 +1,149 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extrastyle %}
+  <link rel="stylesheet" href="/static/yatra/normalize.css">
+  <link rel="stylesheet" href="/static/yatra/wookmark/css/main.css">
+  <link rel="stylesheet" type="text/css" href="/static/yatra/cropper/cropper.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/items.css"/>
+  <link rel="stylesheet" href="/static/yatra/blueimp/css/blueimp-gallery.css">
+  <link rel="stylesheet" href="/static/yatra/blueimp/css/blueimp-gallery-indicator.css">
+  <link rel="stylesheet" href="/static/yatra/blueimp/css/blueimp-gallery-video.css">
+{% endblock %}
+{% block bdoverlay %}
+  <div id="bd-overlay"></div>
+{% endblock %}
+{% block yatra_block %}
+  <style type="text/css">
+    body{
+      background-image: url("{{category.cover_image.url}}");
+      background-size: cover;
+      background-attachment: fixed;
+    }
+
+    body#others > #bd-overlay{
+      position: absolute;
+      top: 90px;
+      left: 0px;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0, 0.3);
+      padding-bottom: 50px;
+      z-index: -10000
+    }
+    #container{
+      position: relative;
+    }
+    ul{
+      list-style-type: none;
+    }
+    ul li{
+      list-style-type: none;
+    }
+    ul#container li{
+      border: 4px solid #fff;
+    }
+    ul#container li a.number{
+        color: #000;
+        font-size: 20px;
+        position: absolute;
+        bottom: 0px;
+        padding: 0px 10px;
+        background-color: #fff;
+    }
+    #main{
+      margin-top: 40px;
+    }
+
+    .li-inner{
+      position: relative;
+    }
+    .li-inner-top{
+      position: absolute;
+      width: 100%;
+      background-color: #fff;
+      display: none;
+      padding-bottom: 5px;
+      z-index: 1;
+    }
+    .li-inner:hover .li-inner-top{
+      display: block;
+    }
+    .li-inner-top  .new-btn{
+      border: 1px solid #000;
+      color: #000;
+    }
+
+    .btn-1{
+      background-color: #4e4e4e;
+      color: #fff;
+    }
+    .btn-1:hover{
+      background-color: #4e4e4e;
+      color: #aeaeae;
+    }
+  </style>
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3 template-page-title text-center">
+      <h2 class="text-center">{{ video_template.title }}</h2>
+    </div>
+  </div>
+  <div class="row video-row">
+    <div class="col-sm-6 col-sm-offset-3 template-video">
+      <video src="{{video_template.demo_file.url}}" controls="" width="100%">
+      </video>
+    </div>
+  </div>
+  <div id="main" class="row">
+    <ul id="container" class="col-sm-8 col-sm-offset-2">
+      {% for grouped_item_info in video_template.get_items_info|grouped_in:3 %}
+          {% for item_info in grouped_item_info %}
+            <li>
+              <div class="li-inner">
+                <div class="li-inner-top">
+                  <div class="col-sm-12">
+                    <a class="new-btn pull-left show-upload-btn" data-number="{{item_info.file_name}}">Upload</a>
+                    <a class="new-btn pull-right show-edit-btn">Edit</a>
+                  </div>
+                </div>
+                {% with item=items|get_ordered_item:item_info.file_name %}
+                  {% if item_info.file_type == "image" %}
+                    {% if item %}
+                      <img src="{{ item.attachment.url }}" width="250"/>
+                    {% else %}
+                      <img src="{{item_info.tmp_path}}" width="250"/>
+                    {% endif %}
+                  {% else %}
+                    <video src="{{item_info.tmp_path}}" controls width="250"></video>
+                  {% endif %}
+                {% endwith %}
+                <a href="javascript: void(0);" class="number">{{item_info.file_name}}</a>
+              </div>
+            </li>
+          {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
+{% block extrajs %}
+  <script src="/static/yatra/blueimp/js/blueimp-helper.js"></script>
+  <script src="/static/yatra/blueimp/js/blueimp-gallery.js"></script>
+  <script src="/static/yatra/blueimp/js/blueimp-gallery-fullscreen.js"></script>
+  <script src="/static/yatra/blueimp/js/blueimp-gallery-indicator.js"></script>
+  <script src="/static/yatra/blueimp/js/blueimp-gallery-video.js"></script>
+  <script src="/static/yatra/wookmark/imagesloaded.pkgd.js"></script>
+  <script src="/static/yatra/wookmark/wookmark.js"></script>
+  <script type="text/javascript" src="/static/yatra/caman/caman.full.js"></script>
+  <script type="text/javascript" src="/static/yatra/cropper/cropper.js"></script>
+  <script type="text/javascript" src="/static/yatra/items.js"></script>
+  <script type="text/javascript">
+    $(document).on("ready", function(){
+      var container = '#container'
+      imagesLoaded(container, function () {
+        wookmark = new Wookmark(container, {
+          offset: 24, // Optional, the distance between grid items
+          itemWidth: 260 // Optional, the width of a grid item
+        });
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,28 @@
+/*.carousel-item{
+  position:absolute;
+  z-index: 1;
+  box-shadow: 0px 0px 10px #000;
+  border: 5px solid #fff;
+  border-radius: 10px;
+}
+.carousel-item img{
+  border-radius: 6px;
+}
+.carousel-item:first-child{
+  rotation: 10;
+  transition: all 500ms linear;
+  transform: perspective( 1000px ) rotateY(80deg);
+}
+
+
+.carousel-item:nth-child(2){
+  left: 320px;
+  top: 60px;
+  z-index: 2;
+  box-shadow: 0px 0px 30px #000;
+}
+
+.carousel-item:nth-child(3){
+  left: 650px;
+  z-index: 1;
+}*/
