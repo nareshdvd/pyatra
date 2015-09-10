@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/css/common.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/css/home.css"/>
+  </head>
+  <body>
+    {% include 'yatra/top_navbar.html' %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6 col-sm-offset-3 text-center">
+          <div class="center-box">
+            <h2>YOUR JOURNEY, FRAME BY FRAME</h2>
+            <h3>Click, Create and Share. Make movies from your unforgetable moments of life</h3>
+            <a href="javascript: void(0);" class="start-here text-center" data-in="{{ request.user.is_authenticated }}">
+              START HERE
+              <span class="glyphicon glyphicon-arrow-right" style="margin-left: 8px;"></span>
+            </a>
+          </div>
+          <div class="auth-box" style="display: none;">
+            <div>
+              <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#panel-signin" aria-controls="panel-signin" role="tab" data-toggle="tab">Sign In</a></li>
+                <li role="presentation"><a href="#panel-signup" aria-controls="panel-signup" role="tab" data-toggle="tab">Sign Up</a></li>
+              </ul>
+              <div class="tab-content">
+                <div role="tabpanel" class="tab-pane" id="panel-signin">
+                  <form class="form-horizontal" action="/accounts/signin_post" method="post" id="signin-form">
+                    {% csrf_token %}
+                    <input type="text" style="display: none;"/>
+                    <input type="password" style="display: none;"/>
+                    <div class="form-group">
+                      <div class="alert alert-danger signin-error" style="display: none;">test</div>
+                    </div>
+                    <div class="form-group">
+                      <input type="text" name="email" class="form-control" placeholder="Email" autocomplete="off"/>
+                    </div>
+                    <div class="form-group">
+                      <input type="password" name="token" class="form-control" placeholder="Password"/>
+                    </div>
+                    <div class="form-group">
+                      <button type="submit" class="btn-1 pull-left">Login</button>
+                    </div>
+                  </form>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="panel-signup">
+                  <form class="form-horizontal" action="/accounts/signup" method="post" id="signup-form">
+                    {% csrf_token %}
+                    <input type="text" style="display: none;"/>
+                    <input type="password" style="display: none;"/>
+                    <div class="form-group">
+                      <input type="text" name="email" class="form-control" placeholder="Email" autocomplete="off"/>
+                    </div>
+                    <div class="form-group">
+                      <input type="password" name="password" class="form-control" placeholder="Password"/>
+                    </div>
+                    <div class="form-group">
+                      <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm Password"/>
+                    </div>
+                    <div class="form-group">
+                      <button type="submit" class="btn-1 pull-left">Register</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="/static/yatra/js/jquery.js"></script>
+    <script type="text/javascript" src="/static/yatra/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/yatra/js/common.js"></script>
+    <script type="text/javascript" src="/static/yatra/js/home.js"></script>
+  </body>
+</html>

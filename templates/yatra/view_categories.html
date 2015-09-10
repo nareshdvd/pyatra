@@ -1,0 +1,43 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/view_categories.css"/>
+{% endblock %}
+{% block main_container %}
+  <div class="row">
+    <div class="col-sm-12">
+      <h2 class="page-heading">Categories</h2>
+    </div>
+  </div>
+  <div class="columns-3">
+    {% for grouped_categories in categories|grouped_in:3 %}
+      <div class="row">
+        {% for category in grouped_categories %}
+          <div class="category-image updown-transition col-sm-4 col-xs-4 col-md-4 col-lg-4 text-center" style="background: url('{{category|get_resized:'600X337'}}'); background-position: 0px -40px;">
+            <div class="category-title updown-transition">
+              {{ category.title }}
+            </div>
+            <a class="btn-1 select-category-btn updown-transition" href="/yatra/categories/{{category.id}}/select">Select Category</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="columns-2">
+  {% for grouped_categories in categories|grouped_in:2 %}
+      <div class="row">
+        {% for category in grouped_categories %}
+          <div class="category-image updown-transition col-sm-6 col-xs-6 col-md-6 col-lg-6 text-center" style="background: url('{{category|get_resized:'600X337'}}');  background-position: 0px -40px;">
+            <div class="category-title updown-transition">
+              {{ category.title }}
+            </div>
+            <a class="btn-1 select-category-btn updown-transition" href="/yatra/categories/{{category.id}}/select">Select Category</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+{% block extra_js %}
+
+{% endblock %}

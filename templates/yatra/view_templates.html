@@ -1,0 +1,78 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/video-js.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/view_templates.css"/>
+  <style type="text/css">
+    .body-background-overlay{
+      background: url('{{selected_category.cover_image.url}}') no-repeat center center;
+      -webkit-background-size: 100% 100%;
+      -moz-background-size: 100% 100%;
+      -o-background-size: 100% 100%;
+      background-size: 100% 100%;
+      background-attachment: fixed;
+      -webkit-filter: blur(5px);
+      -moz-filter: blur(5px);
+      -o-filter: blur(5px);
+      -ms-filter: blur(5px);
+      filter: blur(5px);
+    }
+  </style>
+{% endblock %}
+{% block main_container %}
+  <div class="row">
+    <div class="col-sm-12">
+      <h2 class="page-heading text-center">Templates</h2>
+    </div>
+  </div>
+  <div class="video-container columns-3">
+    {% for template_group in templates|grouped_in:3 %}
+      <div class="row grouped-row">
+        {% for template in template_group %}
+          <div class="col-sm-4 col-xs-6">
+            <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+              <source src="{{template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+            </video>
+            <div class="video-bottom">
+              {% if template.main_variation == True and template.has_variations == True %}
+                <a class="btn-1 view-variations" href="/yatra/templates/variations/{{template.variation_id}}">View Variations</a>
+              {% else %}
+                <a class="btn-1 select-template-btn" href="/yatra/templates/{{template.id}}/select">Select Me</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="video-container columns-2">
+    {% for template_group in templates|grouped_in:2 %}
+      <div class="row grouped-row">
+        {% for template in template_group %}
+          <div class="col-sm-6 col-xs-6">
+            <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+              <source src="{{template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+            </video>
+            <div class="video-bottom">
+              {% if template.main_variation == True and template.has_variations == True %}
+                <a class="btn-1 view-variations" href="/yatra/templates/variations/{{template.variation_id}}">View Variations</a>
+              {% else %}
+                <a class="btn-1 select-template-btn" href="/yatra/templates/{{template.id}}/select">Select Me</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+{% block extra_js %}
+  <script type="text/javascript" src="/static/yatra/js/video.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/view_templates.js"></script>
+{% endblock %}

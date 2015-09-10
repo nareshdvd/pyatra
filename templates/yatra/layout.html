@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/yatra/css/common.css"/>
+    {% block extra_css %}
+
+    {% endblock %}
+  </head>
+  <body>
+    <div class="body-background-overlay"></div>
+    {% include 'yatra/top_navbar.html' %}
+    <div class="container-fluid main-container">
+      {% block main_container %}
+
+      {% endblock %}
+    </div>
+    <script type="text/javascript" src="/static/yatra/js/jquery.js"></script>
+    <script type="text/javascript" src="/static/yatra/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/yatra/js/common.js"></script>
+    {% block extra_js %}
+
+    {% endblock %}
+  </body>
+</html>

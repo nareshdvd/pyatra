@@ -1,0 +1,141 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/video-js.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/cropper/cropper.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/view_items.css"/>
+  <style type="text/css">
+    .body-background-overlay{
+      background: url('{{selected_category.cover_image.url}}') no-repeat center center;
+      -webkit-background-size: 100% 100%;
+      -moz-background-size: 100% 100%;
+      -o-background-size: 100% 100%;
+      background-size: 100% 100%;
+      background-attachment: fixed;
+      -webkit-filter: blur(5px);
+      -moz-filter: blur(5px);
+      -o-filter: blur(5px);
+      -ms-filter: blur(5px);
+      filter: blur(5px);
+    }
+  </style>
+{% endblock %}
+{% block main_container %}
+  <div class="row">
+    <div class="col-sm-12">
+      <h2 class="page-heading text-center">Items</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-4">
+          <video class="video-js vjs-default-skin" controls preload="none" width="80%" height="200" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+            <source src="{{selected_template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+            <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+            <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+            <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+          </video>
+          <div class="row">
+            <div class="col-sm-12">
+              <a class="btn-1" id="render" href="/yatra/render">Render</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-8">
+          <div class="row" style="margin-bottom: 30px;">
+            {% for mock_item in mock_items|get_first_n_items:2 %}
+              <div class="col-sm-6">
+                {% with uploaded_item=uploaded_items|get_ordered_item:mock_item.file_name %}
+                  {% if uploaded_item %}
+                    {% if mock_item.file_type == 'image' %}
+                      <div class="item-image-div" style="background:url('{{uploaded_item.attachment.url}}') center center; width: 100%; height: 271px; background-size: cover;">
+                    {% else %}
+                      <div class="item-video-div">
+                        <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                          <source src="{{uploaded_item.attachment.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+                          <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+                          <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+                          <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                        </video>
+                    {% endif %}
+                  {% else %}
+                    {% if mock_item.file_type == 'image' %}
+                    <div class="item-image-div updown-transition" style="background:url('{{mock_item.tmp_path}}') center center; width: 100%; height: 271px; background-size: cover;">
+                    {% else %}
+                    <div class="item-video-div">
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                        <source src="{{mock_item.tmp_path}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+                        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                      </video>
+                    {% endif %}
+                  {% endif %}
+                    <div class="inner updown-transition">
+                      <div class="item-action-container">
+                        <a href="javascript: void(0);"><label><input type="file" class="item-upload-input" data-filetype="{{mock_item.file_type}}" data-itemnumber="{{mock_item.file_name}}"/>Upload</label></a>
+                        <a href="javascript: void(0);"><label class="view-edit-item" data-itemnumber="{{mock_item.file_name}}" data-itemtype="{{mock_item.file_type}}">Edit</label></a>
+                      </div>
+                    </div>
+                  </div>
+                {% endwith %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% for grouped_mock_item in mock_items|get_all_items_from_n:2|grouped_in:3 %}
+        <div class="row" style="margin-bottom: 30px;">
+          {% for mock_item in grouped_mock_item %}
+            <div class="col-sm-4">
+              {% with uploaded_item=uploaded_items|get_ordered_item:mock_item.file_name %}
+                {% if uploaded_item %}
+                  {% if mock_item.file_type == 'image' %}
+                    <div class="item-image-div updown-transition" style="background:url('{{uploaded_item.attachment.url}}') center center; width: 100%; height: 241px; background-size: cover;">
+                  {% else %}
+                    <div class="item-video-div">
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                        <source src="{{uploaded_item.attachment.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+                        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                      </video>
+                  {% endif %}
+                {% else %}
+                  {% if mock_item.file_type == 'image' %}
+                    <div class="item-image-div updown-transition" style="background:url('{{mock_item.tmp_path}}') center center; width: 100%; height: 241px; background-size: cover;">
+                  {% else %}
+                    <div class="item-video-div">
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                        <source src="{{mock_item.tmp_path}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+                        <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+                        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                      </video>
+                  {% endif %}
+                {% endif %}
+                      <div class="inner updown-transition">
+                        <div class="item-action-container">
+                          <a href="javascript: void(0);"><label><input type="file" class="item-upload-input" data-filetype="{{mock_item.file_type}}" data-itemnumber="{{mock_item.file_name}}"/>Upload</label></a>
+                          <a href="javascript: void(0);"><label class="view-edit-item" data-itemnumber="{{mock_item.file_name}}" data-itemtype="{{mock_item.file_type}}">Edit</label></a>
+                        </div>
+                      </div>
+                    </div>
+              {% endwith %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+{% block extra_js %}
+  <script type="text/javascript" src="/static/yatra/jquery-ui/jquery-ui.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/video.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/caman/caman.full.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/cropper/cropper.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/popcorn.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/view_items.js"></script>
+{% endblock %}

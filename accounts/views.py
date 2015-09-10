@@ -38,8 +38,6 @@ def signin_post(request):
       user = User.objects.create_user(username=username, email=email, password=token)
     else:
       username = user.username
-    print username
-    print token
     user = authenticate(username=username, password=token)
     if user is not None:
       login(request, user)
@@ -48,14 +46,12 @@ def signin_post(request):
         'status' : 'success',
         'message' : 'You are logged in successfully'
       }
-      redirect_url = '/yatra/categories'
   else:
     flash_data = {
       'status' : 'error',
       'message' : 'Invalid Token'
     }
-    redirect_url = '/accounts/signin'
-  return FlashedRedirect(redirect_url, request, flash_data, post_data)
+  return JsonResponse(flash_data)
 
 
 

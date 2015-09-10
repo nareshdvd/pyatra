@@ -1,0 +1,32 @@
+{% extends 'yatra/modal_layout.html' %}
+{% load commontags %}
+{% block modal_id%}template-variation-modal{% endblock %}
+{% block modal_title %}
+  Template Variations
+{% endblock %}
+{% block modal_body %}
+  <div class="video-container">
+    {% for template_group in templates|grouped_in:2 %}
+      <div class="row grouped-row">
+        {% for template in template_group %}
+          <div class="col-sm-6 col-xs-6">
+            <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+              <source src="{{template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+            </video>
+            <div class="video-bottom row">
+              <div class="col-sm-3">
+                <a class="btn-1 select-template-btn pull-left" href="/yatra/templates/{{template.id}}/select">Select</a>
+              </div>
+              <div class="col-sm-9 btn-1" style="margin-left: -15.5px;">
+                {{ template.variation_description }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

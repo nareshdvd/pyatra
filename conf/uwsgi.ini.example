@@ -1,0 +1,11 @@
+[uwsgi]
+chdir           = /var/www/html/new_securecore/securecore
+module          = restorecore.wsgi
+home            = /var/www/html/new_securecore/score
+master          = true
+processes       = 1
+socket          = /var/www/html/new_securecore/securecore.sock
+chmod-socket    = 666
+vacuum          = true
+pidfile         = /var/www/html/new_securecore/securecore-uwsgi.pid
+plugins         = python

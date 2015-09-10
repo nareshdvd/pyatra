@@ -4,6 +4,20 @@ from lib.classes import FileHandler
 from PIL import Image, ImageOps
 import uuid
 import os
+import time
+import random
+import json
+import subprocess
+from subprocess import Popen
+from os import listdir
+from os.path import isfile, join
+from pyatra.settings import *
+import shutil
+from django.db.models import Q
+
+def process(args):
+  pr = Popen(args, stderr=subprocess.STDOUT)
+  pr.wait()
 
 class Category(models.Model):
   title = models.CharField(max_length=500)
@@ -28,6 +42,10 @@ class Category(models.Model):
     image = image.resize((width,height), Image.ANTIALIAS)
     image.save(resized_path, "jpeg", quality=90)
     return resized_url
+
+  @property
+  def main_template_variations(self):
+    return self.category_templates.filter(main_variation = True)
 
 class Template(models.Model):
   title = models.CharField(max_length=500)
@@ -73,10 +91,6 @@ class Template(models.Model):
       'variation_id' : post_data['variation_id']
     })
 
-    # print post_data
-    # print post_data['variation_id']
-    # print object.variation_id
-    # return
     if 'variation_description' in post_data.keys():
       object.variation_description = post_data['variation_description']
 
@@ -91,11 +105,16 @@ class Template(models.Model):
       object.categories.add(Category.objects.get(pk=cid))
     return object
 
+  @property
   def get_main_variation(self):
     if self.main_variation == True:
       return self
     else:
       return Template.objects.filter(variation_id=self.variation_id, main_variation=True).first()
+
+  @property
+  def has_variations(self):
+    return Template.objects.filter(variation_id=self.variation_id).count() != 1
 
   @classmethod
   def update(cls, post_data):
@@ -131,9 +150,6 @@ class Template(models.Model):
     return object
 
 
-
-
-
   def remove(self):
     try:
       demo_file_path = self.demo_file.path
@@ -157,6 +173,7 @@ class Template(models.Model):
     for video_session in self.template_video_sessions.all():
       video_session.remove()
     self.delete()
+
 
   def extract(self, video_session):
     zipped_file_name = self.project_compressed_file.path.split('/')
@@ -199,16 +216,30 @@ class Template(models.Model):
     extracted_project_dir = self.extract(video_session)
     template_project_file_path = os.path.join(extracted_project_dir, 'template.aep')
     output_path = os.path.join(MEDIA_ROOT, 'final_videos', video_session.session_id, 'output.mov')
-    process([
-      r'/Applications/Adobe After Effects CC 2014/aerender',
-      '-project',
-      template_project_file_path,
-      '-comp',
-      'final_comp',
-      '-mp',
-      '-output',
-      output_path
-    ])
+    user_uploaded_content_dir = os.path.join(MEDIA_ROOT, 'uploads', video_session.session_id)
+    for item_info in self.get_items_info():
+      file_name = item_info['file_name'] + "." + item_info['extension']
+      tmp_file_path = os.path.join(user_uploaded_content_dir, file_name)
+      copy_file_path = os.path.join(extracted_project_dir, 'footage_items', file_name)
+      shutil.copyfile(tmp_file_path, copy_file_path)
+    extracted_dir = os.path.join(MEDIA_ROOT, 'user_extracted_projects', video_session.session_id)
+    if self.project_compressed_file.path.endswith('.zip'):
+      compressed_file_path = os.path.join(extracted_dir, 'project')
+      shutil.make_archive(compressed_file_path, 'zip', extracted_project_dir)
+      compressed_file_path = compressed_file_path + ".zip"
+    else:
+      compressed_file_path = os.path.join(extracted_dir, 'project.tar')
+      process([
+        'tar',
+        '-zcvf',
+        compressed_file_path,
+        extracted_project_dir
+      ])
+    video_session.compressed_file = compressed_file_path
+    video_session.save()
+    render_server = RenderServer.get_server()
+    data = render_server.add_job_to_render(video_session)
+    return data
 
   def set_items_info(self):
     path = self.project_compressed_file.path
@@ -286,6 +317,7 @@ class VideoSession(models.Model):
   timestamp = models.CharField(max_length=255, blank=True, default='')
   video_generated = models.BooleanField(blank=True, default=False)
   video = models.FileField(upload_to='final_videos', null=True, blank=True)
+  compressed_file = models.TextField(null=True, blank=True, default=None)
 
   @classmethod
   def generate(cls, user, video_template):
@@ -328,9 +360,9 @@ class VideoSession(models.Model):
     return self.contents.filter(Q(content_type='IMAGE')|Q(content_type='VIDEO')).order_by('content_order')
 
   def add_base64_photo(self, content_order, base64str):
-    converted_image = convert_to_image(base64str)
     items_info = self.video_template.get_items_info()
-    item_info = items_info[int(content_order)]
+    print content_order
+    item_info = items_info[int(content_order) - 1]
     extension = item_info['extension']
     file_path = FileHandler.get_video_session_file_path(self, content_order, extension)
     FileHandler.uploadbase64file(base64str, file_path)
@@ -342,6 +374,7 @@ class VideoSession(models.Model):
       photo_data['content_order'] = content_order
       content_obj = YatraContent(**photo_data)
     content_obj.save()
+    return content_obj
 
   def add_photo(self, photo_data):
     attachment = photo_data['attachment']
@@ -352,8 +385,13 @@ class VideoSession(models.Model):
     file_path = FileHandler.get_video_session_file_path(self, photo_data['content_order'], extension)
     FileHandler.uploadfile(attachment, file_path)
     photo_data['attachment'] = file_path
-    photo = YatraContent(**photo_data)
-    photo.save()
+    photo = self.viewablecontents.filter(content_order=photo_data['content_order']).first()
+    if photo is None:
+      photo = YatraContent(**photo_data)
+      photo.save()
+    else:
+      photo.attachment = file_path
+      photo.save()
     photo.resize()
     return photo
 
@@ -367,7 +405,13 @@ class VideoSession(models.Model):
     file_path = FileHandler.get_video_session_file_path(self, video_data['content_order'], extension)
     FileHandler.uploadfile(attachment, file_path)
     video_data['attachment'] = file_path
-    video = YatraContent(**video_data)
+    video = self.viewablecontents.filter(content_order=video_data['content_order']).first()
+    if video is None:
+      video = YatraContent(**video_data)
+      video.save()
+    else:
+      video.attachment = file_path
+      video.save()
     video.save()
     return video
 
@@ -437,6 +481,30 @@ class YatraContent(models.Model):
     #   shutil.copyfile(tmppath, path)
     #   os.remove(tmppath)
 
+  def crop(self, crop_data):
+    if (self.content_type == 'VIDEO'):
+      vid_start = crop_data['vid_start']
+      vid_end = crop_data['vid_end']
+      input_path = self.attachment.path
+      output_path = self.attachment.path.replace('.mp4', '_cropped.mp4')
+      process([
+        'ffmpeg',
+        '-i',
+        input_path,
+        '-ss',
+        '00:00:{}'.format(vid_start),
+        '-t',
+        '00:00:{}'.format(vid_end),
+        '-c:v',
+        'copy',
+        '-c:a',
+        'copy',
+        output_path
+      ])
+      os.remove(input_path)
+      shutil.copyfile(output_path, input_path)
+      os.remove(output_path)
+
   def remove(self):
     try:
       path = self.attachment.path
@@ -444,5 +512,116 @@ class YatraContent(models.Model):
     except:
       pass
     self.delete()
+
+from django.db.models import Max, Min, F
+import requests
+class RenderServer(models.Model):
+  ip_address = models.CharField(max_length=60)
+  port = models.CharField(max_length=10)
+  jobs_count = models.IntegerField(null=True, blank=True, default=0)
+
+  @classmethod
+  def get_server(cls):
+    object = cls.objects.filter(jobs_count=(cls.objects.aggregate(Min('jobs_count'))['jobs_count__min'])).first()
+    return object
+
+  @property
+  def base_url(self):
+    return 'http://{}:{}'.format(self.ip_address, self.port)
+
+  def add_job_to_render(self, session):
+    job = RenderJob.objects.filter(session_id=session.id).first()
+    data = {}
+    if job is not None:
+      if job.status == 'failed':
+        if job.render_server.id == self.id:
+          data = job.restart()
+        else:
+          job.transfer_to_server(self)
+          data = job.start()
+      elif job.status == 'hold':
+        data = job.start()
+    else:
+      job = RenderJob(**{
+        'render_server_id' : self.id,
+        'session_id' : session.id,
+        'status' : 'hold'
+      })
+      job.save()
+      data = job.start()
+    return data
+
+class RenderJob(models.Model):
+  STATUS_CHOICES = (('hold', 'hold'),('sent', 'sent'), ('started', 'started'), ('failed', 'failed'), ('finished', 'finished'))
+  render_server = models.ForeignKey(RenderServer, related_name='server_render_jobs')
+  session = models.ForeignKey(VideoSession, related_name='session_render_jobs')
+  status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+  status_message = models.TextField(null=True, blank=True, default=None)
+
+  def start(self):
+    render_job_url = '{}/{}'.format(self.render_server.base_url, 'render')
+    files = {'file' : open(self.session.compressed_file, 'rb')}
+    data = requests.post(render_job_url, data={'render_job_id' : self.id}, files=files).json()
+    self.status = data['status']
+    self.status_message = data['message']
+    self.save()
+    return data
+
+  def restart(self):
+    if self.status == 'failed':
+      render_job_restart_url = '{}/{}'.format(self.render_server.base_url, 'restart_render')
+      data = requests.post(render_job_restart_url, data={'render_job_id' : self.id}).json()
+      self.status = data['status']
+      self.status_message = data['message']
+      self.save()
+      return data
+    else:
+      return {}
+  def finish(self, message, video_file):
+    self.status = 'finished'
+    self.status_message = message
+    FileHandler.upload_file(video_file, 'final_videos/{}.mp4'.format(self.session.session_id))
+    session =self.session
+    session.video = 'final_videos/{}.mp4'.format(self.session.session_id)
+    session.save()
+    self.save()
+    render_server = self.render_server
+    render_server.jobs_count = render_server.jobs_count - 1
+    render_server.save()
+
+  def transfer_to_server(self, render_server):
+    delete_job_from_server_url = '{}/{}'.format(self.render_server.base_url, 'delete_job')
+    data = requests.post(delete_job_from_server_url, data={'render_job_id' : self.id}).json()
+    old_render_server = self.render_server
+    old_render_server.jobs_count = old_render_server.jobs_count - 1
+    old_render_server.save()
+    self.render_server = render_server
+    self.save()
+    return data
+
+
+
+
+
+
+  # @property
+  # def project_existence_url(self, template):
+  #   return '{}/{}/{}'.format(self.base_url, 'project/exists', template.id)
+
+  # def check_for_project_existence(self, template):
+  #   data = requests.get(self.project_existence_url(template))
+  #   if 'exists' in data:
+  #     return data['exists']
+  #   else:
+  #     return False
+
+  # @property
+  # def send_archived_project_url(self, template):
+  #   return '{}/{}/{}'.format(self.base_url, 'project/upload', template.id)
+
+  # def send_archived_project(self, template):
+  #   files = {'file' : open(template.project_compressed_file, 'rb')}
+  #   data = requests.post(self.send_archived_project_url, files=files)
+
 
 

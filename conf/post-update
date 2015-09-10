@@ -1,0 +1,11 @@
+#!/bin/bash
+echo
+echo "**** Pulling changes into Live [Hub's post-update hook]"
+echo
+
+cd ~/securecore || exit
+unset GIT_DIR GIT_WORK_TREE
+source ~/env/bin/activate
+fab update
+exec git update-server-info
+

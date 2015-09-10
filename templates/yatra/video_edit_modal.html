@@ -1,0 +1,51 @@
+{% extends 'yatra/modal_layout.html' %}
+{% load commontags %}
+{% block modal_id%}image-edit-modal{% endblock %}
+{% block modal_title %}
+  Upload/Edit {% if item_info.file_type == 'image' %}Image{% else %}Video{% endif %} {{ item_info.file_name }}
+{% endblock %}
+
+{% block modal_body %}
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="item-preview-box">
+          <video id="id_edit_video" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "auto" }'>
+            {% if item == None %}
+              <source src="{{item_info.tmp_path}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+            {% else %}
+              <source src="{{item.attachment.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+            {% endif %}
+          </video>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a id="video-cutter-tab" href="#video-cutter" aria-controls="video-cutter" role="tab" data-toggle="tab">Video Cutter</a></li>
+          <!-- <li role="presentation"><a id="presets-tab" href="#preset-filters" aria-controls="preset-filters" role="tab" data-toggle="tab">Presets</a></li> -->
+        </ul>
+        <div class="tab-content" style="padding-top: 20px; padding-left: 5px; padding-right: 5px;">
+          <div class="row">
+            <div class="col-sm-12">
+              <div id="video-cutter"role="tabpanel" class="video-cutter tab-pane active">
+                <div id="cutter-slider"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block modal_footer %}
+  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="button" class="btn btn-primary" id="apply_changes" data-itemnumber="{{item_info.file_name}}" data-itemtype="{{item_info.file_type}}">Save changes</button>
+{% endblock %}

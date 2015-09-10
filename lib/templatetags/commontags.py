@@ -4,6 +4,11 @@ from datetime import datetime
 from pyatra.settings import *
 from PIL import Image
 register = template.Library()
+import time
+
+@register.filter(name="curr_timestamp")
+def curr_timestamp(teststr):
+  return int(time.time())
 
 @register.filter(name="increment_by")
 def increment_by(num, increase_by):
@@ -95,3 +100,15 @@ def timestamp(tmpstr):
 @register.filter(name="get_resized")
 def get_resized(yatra_content, size):
   return yatra_content.resized(size)
+
+@register.filter(name="get_first_n_items")
+def get_first_n_items(items, n):
+  return items[0:n]
+
+@register.filter(name="get_all_items_from_n")
+def get_all_items_from_n(items, n):
+  items_count = len(items)
+  if(items_count == n):
+    return []
+  else:
+    return items[n:items_count]
