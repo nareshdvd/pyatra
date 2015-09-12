@@ -270,7 +270,7 @@ class Template(models.Model):
     footage_items_dir = os.path.join(uncompressed_project_dir, 'footage_items')
 
 
-    onlyfiles = [ f for f in listdir(footage_items_dir) if (isfile(join(footage_items_dir,f)) and (f.endswith('jpeg') || f.endswith('mp4')))]
+    onlyfiles = [ f for f in listdir(footage_items_dir) if (isfile(join(footage_items_dir,f)) and (f.endswith('jpeg') or f.endswith('mp4')))]
     # files_count = len(onlyfiles)
     def numeric_compare(i, j):
       i = int(i.split('.')[0])
