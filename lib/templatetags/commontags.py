@@ -112,3 +112,10 @@ def get_all_items_from_n(items, n):
     return []
   else:
     return items[n:items_count]
+
+@register.filter(name="get_format_path")
+def get_format_path(input_file_path, io_format):
+  formats = io_format.split(':')
+  input_format = formats[0]
+  output_format = formats[1]
+  return input_file_path.replace(input_format, output_format)

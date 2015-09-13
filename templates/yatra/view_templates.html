@@ -32,8 +32,7 @@
           <div class="col-sm-4 col-xs-6">
             <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
               <source src="{{template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
-              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
-              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <source src="{{template.demo_file.url|get_format_path:'mp4:ogv'}}" type='video/ogg' />
               <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
             </video>
             <div class="video-bottom">
@@ -55,8 +54,7 @@
           <div class="col-sm-6 col-xs-6">
             <video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
               <source src="{{template.demo_file.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
-              <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
-              <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+              <source src="{{template.demo_file.url|get_format_path:'mp4:ogv'}}" type='video/ogg' />
               <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
             </video>
             <div class="video-bottom">
