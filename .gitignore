@@ -9,3 +9,5 @@
 /static1
 *.pyc
 /staticfiles
+conf/*
+pyatra/settings.py
