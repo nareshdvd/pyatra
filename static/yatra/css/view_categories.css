@@ -3,34 +3,35 @@ body{
 }
 
 .category-image{
-  background-size: 600px 337px !important;
-  height: 297px !important;
-  background-repeat: no-repeat !important;
-  display: block;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding-bottom: 100px;
 }
 
-.category-image:hover{
-  background-position: 0px 0px !important;
+.category-image > img{
+  position: absolute;
+  width: 100%;
+  height: 120%;
+  top: -20%;
+  left: 0px;
+  z-index: -1;
+}
+
+.category-image:hover > img{
+  top: 0%;
 }
 
 .category-title{
-  font-size: 30px;
+  font-size: 24px;
   text-transform: uppercase;
-  top: 100px;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: #fff;
   background-color: rgba(0,0,0,0.5);
   margin-top: 100px;
 }
 
-.category-image:hover .category-title{
-  margin-top: 140px;
-}
-
 .select-category-btn{
-  bottom: 10px;
-  left: 30%;
   font-size: 18px;
   margin-top: 30px;
 }

@@ -141,7 +141,8 @@ $(document).on("change", ".item-upload-input", function(){
     success: function(retdata){
       if(retdata.status == "success"){
         if(required_file_type == "image"){
-          $this.closest(".item-image-div").css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+          $this.closest(".item-image-div").find(".item-img").attr("src", retdata.attachment_url + "?ts=" + get_timestamp());
+          // $this.closest(".item-image-div").css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
         }
         else{
           $this.closest(".item-video-div").find('video').find("source[type='video/mp4']").attr('src', retdata.attachment_url + "?ts=" + get_timestamp());
@@ -234,8 +235,9 @@ function apply_filters_on_original_image_and_save($save_btn){
           type: 'post',
           data: {'attachment' : attachment},
           success: function(retdata){
-            console.log(retdata);
-            $item_image_div.css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+            // console.log(retdata);
+            // $item_image_div.css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+            $item_image_div.find(".item-img").attr("src", retdata.attachment_url + "?ts=" + get_timestamp());
             // console.log($item_image_div.css('background-image').replace('url("', '').replace('")', '').replace("url('", "").replace("')", ""))
             $save_btn.html("saved");
           }
@@ -252,8 +254,9 @@ function apply_filters_on_original_image_and_save($save_btn){
         data: cropped_data,
         type: 'post',
         success: function(retdata){
-          console.log(retdata);
-          $item_image_div.css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+          // console.log(retdata);
+          // $item_image_div.css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+          $item_image_div.find(".item-img").attr("src", retdata.attachment_url + "?ts=" + get_timestamp());
           // console.log($item_image_div.css('background-image').replace('url("', '').replace('")', '').replace("url('", "").replace("')", ""))
           $save_btn.html("saved");
         }

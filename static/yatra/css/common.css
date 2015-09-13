@@ -1,3 +1,6 @@
+.no-padding{
+  padding: 0px !important;
+}
 .scroll-fixed-navbar{
   background-color: #000 !important;
 }

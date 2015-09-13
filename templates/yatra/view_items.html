@@ -46,14 +46,15 @@
         <div class="col-sm-8">
           <div class="row" style="margin-bottom: 30px;">
             {% for mock_item in mock_items|get_first_n_items:2 %}
-              <div class="col-sm-6">
+              <div class="col-sm-6 no-padding">
                 {% with uploaded_item=uploaded_items|get_ordered_item:mock_item.file_name %}
                   {% if uploaded_item %}
                     {% if mock_item.file_type == 'image' %}
-                      <div class="item-image-div" style="background:url('{{uploaded_item.attachment.url}}') center center; width: 100%; height: 271px; background-size: cover;">
+                      <div class="item-image-div" style="width: 100%; height: 271px; background-size: cover;">
+                        <img class="lazy item-img item-img-original" data-original="{{uploaded_item.attachment.url}}"/>
                     {% else %}
                       <div class="item-video-div">
-                        <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                        <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="271" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
                           <source src="{{uploaded_item.attachment.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
                           <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
                           <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
@@ -62,10 +63,11 @@
                     {% endif %}
                   {% else %}
                     {% if mock_item.file_type == 'image' %}
-                    <div class="item-image-div updown-transition" style="background:url('{{mock_item.tmp_path}}') center center; width: 100%; height: 271px; background-size: cover;">
+                    <div class="item-image-div" style="width: 100%; height: 271px; background-size: cover;">
+                      <img class="lazy item-img item-img-mocked" data-original="{{mock_item.tmp_path}}"/>
                     {% else %}
                     <div class="item-video-div">
-                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="271" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
                         <source src="{{mock_item.tmp_path}}?ts={{''|curr_timestamp}}" type='video/mp4' />
                         <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
                         <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
@@ -89,14 +91,15 @@
       {% for grouped_mock_item in mock_items|get_all_items_from_n:2|grouped_in:3 %}
         <div class="row" style="margin-bottom: 30px;">
           {% for mock_item in grouped_mock_item %}
-            <div class="col-sm-4">
+            <div class="col-sm-4 no-padding">
               {% with uploaded_item=uploaded_items|get_ordered_item:mock_item.file_name %}
                 {% if uploaded_item %}
                   {% if mock_item.file_type == 'image' %}
-                    <div class="item-image-div updown-transition" style="background:url('{{uploaded_item.attachment.url}}') center center; width: 100%; height: 241px; background-size: cover;">
+                    <div class="item-image-div" style="width: 100%; height: 271px; background-size: cover;">
+                      <img class="lazy item-img item-img-original" data-original="{{uploaded_item.attachment.url}}"/>
                   {% else %}
                     <div class="item-video-div">
-                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="271" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
                         <source src="{{uploaded_item.attachment.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
                         <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
                         <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
@@ -105,10 +108,11 @@
                   {% endif %}
                 {% else %}
                   {% if mock_item.file_type == 'image' %}
-                    <div class="item-image-div updown-transition" style="background:url('{{mock_item.tmp_path}}') center center; width: 100%; height: 241px; background-size: cover;">
+                    <div class="item-image-div" style="width: 100%; height: 271px; background-size: cover;">
+                      <img class="lazy item-img item-img-mocked" data-original="{{mock_item.tmp_path}}"/>
                   {% else %}
                     <div class="item-video-div">
-                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="241" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+                      <video class="video-js vjs-default-skin" controls preload="none" width="100%" height="271" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
                         <source src="{{mock_item.tmp_path}}?ts={{''|curr_timestamp}}" type='video/mp4' />
                         <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
                         <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
@@ -116,7 +120,7 @@
                       </video>
                   {% endif %}
                 {% endif %}
-                      <div class="inner updown-transition">
+                      <div class="inner">
                         <div class="item-action-container">
                           <a href="javascript: void(0);"><label><input type="file" class="item-upload-input" data-filetype="{{mock_item.file_type}}" data-itemnumber="{{mock_item.file_name}}"/>Upload</label></a>
                           <a href="javascript: void(0);"><label class="view-edit-item" data-itemnumber="{{mock_item.file_name}}" data-itemtype="{{mock_item.file_type}}">Edit</label></a>

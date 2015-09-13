@@ -54,3 +54,10 @@ $.ajaxSetup({
     }
 });
 /* END CSRF addition to ajax post requests */
+
+
+$(function() {
+  $("img.lazy").lazyload({
+    effect : "fadeIn"
+  });
+});

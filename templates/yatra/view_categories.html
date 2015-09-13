@@ -13,11 +13,12 @@
     {% for grouped_categories in categories|grouped_in:3 %}
       <div class="row">
         {% for category in grouped_categories %}
-          <div class="category-image updown-transition col-sm-4 col-xs-4 col-md-4 col-lg-4 text-center" style="background: url('{{category|get_resized:'600X337'}}'); background-position: 0px -40px;">
-            <div class="category-title updown-transition">
+          <div class="category-image col-sm-4 col-xs-4 col-md-4 col-lg-4 text-center">
+            <img class="lazy updown-transition" data-original="{{category|get_resized:'600X337'}}"/>
+            <div class="category-title">
               {{ category.title }}
             </div>
-            <a class="btn-1 select-category-btn updown-transition" href="/yatra/categories/{{category.id}}/select">Select Category</a>
+            <a class="btn-1 select-category-btn" href="/yatra/categories/{{category.id}}/select">Select Category</a>
           </div>
         {% endfor %}
       </div>
@@ -27,11 +28,12 @@
   {% for grouped_categories in categories|grouped_in:2 %}
       <div class="row">
         {% for category in grouped_categories %}
-          <div class="category-image updown-transition col-sm-6 col-xs-6 col-md-6 col-lg-6 text-center" style="background: url('{{category|get_resized:'600X337'}}');  background-position: 0px -40px;">
-            <div class="category-title updown-transition">
+          <div class="category-image col-sm-4 col-xs-4 col-md-4 col-lg-4 text-center">
+            <img src="{{category|get_resized:'600X337'}}"/>
+            <div class="category-title">
               {{ category.title }}
             </div>
-            <a class="btn-1 select-category-btn updown-transition" href="/yatra/categories/{{category.id}}/select">Select Category</a>
+            <a class="btn-1 select-category-btn" href="/yatra/categories/{{category.id}}/select">Select Category</a>
           </div>
         {% endfor %}
       </div>
@@ -39,5 +41,5 @@
   </div>
 {% endblock %}
 {% block extra_js %}
-
+  <script type="text/javascript" src="/static/yatra/js/view_categories.js"></script>
 {% endblock %}
