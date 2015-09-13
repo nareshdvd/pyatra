@@ -413,6 +413,7 @@ class VideoSession(models.Model):
       video.attachment = file_path
       video.save()
     video.save()
+    video.convert('mp4', 'ogv')
     return video
 
 class YatraContent(models.Model):
@@ -432,6 +433,17 @@ class YatraContent(models.Model):
   @property
   def is_video(self):
     return self.content_type == 'VIDEO'
+
+  def convert(self, input_format, output_format):
+    if self.content_type == 'video':
+      path = self.attachment.path
+      newpath = path.replace(input_format, output_format)
+      process([
+        'ffmpeg',
+        '-i',
+        path,
+        newpath
+      ])
 
 
 
