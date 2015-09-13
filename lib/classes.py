@@ -3,6 +3,7 @@ from pyatra.settings import MEDIA_ROOT
 import os
 import json
 import base64
+from lib.helpers import run_process
 
 class FlashedRedirect(HttpResponseRedirect):
   def __init__(self, redirect_to, request, flash_data, form=None, *args, **kwargs):
@@ -63,3 +64,13 @@ class FileHandler(object):
       os.mkdir(vsdir)
 
     return 'uploads/{}/{}.{}'.format(video_session.session_id, file_number, extension)
+
+  @classmethod
+  def convert_video(cls, original_path, input_format, output_format):
+    newpath = original_path.replace(input_format, output_format)
+    run_process([
+      'ffmpeg',
+      '-i',
+      original_path,
+      newpath
+    ])

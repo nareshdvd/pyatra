@@ -100,6 +100,7 @@ class Template(models.Model):
       else:
         object.main_variation = False
     object.save()
+    FileHandler.convert_video(object.demo_file.path, 'mp4', 'ogv')
     # object.save_ogg_file()
     for cid in post_data['categories']:
       object.categories.add(Category.objects.get(pk=cid))
