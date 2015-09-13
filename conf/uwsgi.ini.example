@@ -1,11 +1,11 @@
 [uwsgi]
-chdir           = /var/www/html/new_securecore/securecore
-module          = restorecore.wsgi
-home            = /var/www/html/new_securecore/score
+chdir           = /var/www/html/pyatra
+module          = pyatra.wsgi
+home            = /var/www/html/env
 master          = true
-processes       = 1
-socket          = /var/www/html/new_securecore/securecore.sock
+processes       = 4
+socket          = /var/www/html/pyatra.sock
 chmod-socket    = 666
 vacuum          = true
-pidfile         = /var/www/html/new_securecore/securecore-uwsgi.pid
+pidfile         = /var/www/html/pyatra-uwsgi.pid
 plugins         = python
