@@ -601,6 +601,8 @@ class RenderJob(models.Model):
     render_server = self.render_server
     render_server.jobs_count = render_server.jobs_count - 1
     render_server.save()
+    from yatra.realtime_info import send_realtime_info
+    send_realtime_info({'type' : 'notification', 'message' : 'Your video is generated'}, 'testing_channel')
 
   def transfer_to_server(self, render_server):
     delete_job_from_server_url = '{}/{}'.format(self.render_server.base_url, 'delete_job')

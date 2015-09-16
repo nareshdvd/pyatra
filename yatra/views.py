@@ -207,3 +207,12 @@ def render(request):
   video_template = video_session.video_template
   data = video_template.render(video_session)
   return JsonResponse(data)
+
+def receive_rendered_video(request):
+  video_file = request.FILES.get('file')
+  render_job_id = request.POST.get('render_job_id')
+  render_job = RenderJob.objects.get(render_job_id)
+  render_job.finish('Video generated', video_file)
+  return JsonResponse({'status' : 'success'})
+  # session = render_job.session
+  # template = session.video_template
