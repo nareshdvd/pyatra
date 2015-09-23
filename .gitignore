@@ -1,3 +1,7 @@
+/aerenderpro/media/extracted_projects/*
+/aerenderpro/media/final_videos/*
+/aerenderpro/media/compressed_projects/*
+*.DS_Store
 /media/category_images/*
 /media/final_videos/*
 /media/temp_video_templates/*

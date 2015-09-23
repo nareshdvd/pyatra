@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from yatra import views
-
+from django.views.decorators.csrf import csrf_exempt
 urlpatterns = [
   url(r'^$', views.home, name='home'),
   url(r'^categories$', views.view_categories, name="view_categories"),
@@ -14,5 +14,6 @@ urlpatterns = [
   url(r'items/(?P<item_number>[0-9]+)/save_modified', views.upload_base64_image_item, name="upload_base64_image_item"),
   url(r'items/(?P<item_number>[0-9]+)/save_cropped_image', views.save_cropped_image, name="save_cropped_image"),
   url(r'items/(?P<item_number>[0-9]+)/save_cropped_video', views.save_cropped_video, name="save_cropped_video"),
-  url(r'render', views.render, name='render'),
+  url(r'render$', views.render, name='render'),
+  url(r'receive_rendered_video$', csrf_exempt(views.receive_rendered_video), name='receive_rendered_video'),
 ]

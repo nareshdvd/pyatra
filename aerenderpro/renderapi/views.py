@@ -14,10 +14,17 @@ def process(args):
 
 @csrf_exempt
 def render(request):
+  if not request.POST:
+    print "IAAMAER"
+    return HttpResponse("OK")
   file = request.FILES.get('file')
+  print file
   render_job_id = request.POST.get('render_job_id')
+  print render_job_id
   zipped_file_path = os.path.join(MEDIA_ROOT, 'compressed_projects', file.name)
+  print zipped_file_path
   unzipped_dir_path = os.path.join(MEDIA_ROOT, 'extracted_projects', render_job_id)
+  print unzipped_dir_path
   if os.path.exists(unzipped_dir_path):
     shutil.rmtree(unzipped_dir_path)
   os.mkdir(unzipped_dir_path)
@@ -28,9 +35,17 @@ def render(request):
     '-d',
     unzipped_dir_path
   ])
+  print "IAMAAHERE"
 
-  template_project_file_path = os.path.exists(unzipped_dir_path, render_job_id, 'template.aep')
-  output_path = os.path.join(MEDIA_ROOT, 'final_videos', render_job_id, 'video.mov')
+  template_project_file_path = os.path.join(unzipped_dir_path, 'template.aep')
+  output_dir = os.path.join(MEDIA_ROOT, 'final_videos', render_job_id)
+  try:
+    if not os.path.exists(output_dir):
+      os.mkdir(output_dir)
+    output_path = os.path.join(output_dir, 'video.mov')
+  except Exception as ex:
+    print ex
+    return HttpResponse(json.dumps({'status' : 'hold', 'message' : 'On Hold for now'}), content_type='application/json')
   render_process.delay(render_job_id, [
     r'/Applications/Adobe After Effects CC 2014/aerender',
     '-project',

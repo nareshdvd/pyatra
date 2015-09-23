@@ -1,4 +1,4 @@
-from sogpy import celery_app
+from aerenderpro import celery_app
 import subprocess
 from subprocess import Popen
 import os
@@ -22,7 +22,7 @@ def render_process(render_job_id, process_params):
     '0',
     final_video_path
   ])
-  finish_url = 'http://localhost:8000/yatra/receive_rendered_video'
+  finish_url = 'http://dev.photoyatra.in/yatra/receive_rendered_video'
   files = {'file' : open(final_video_path, 'rb')}
   data = requests.post(finish_url, data={'render_job_id' : render_job_id}, files=files).json()
   delete_mov.delay(mov_path)

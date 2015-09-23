@@ -593,7 +593,7 @@ class RenderJob(models.Model):
   def finish(self, message, video_file):
     self.status = 'finished'
     self.status_message = message
-    FileHandler.upload_file(video_file, 'final_videos/{}.mp4'.format(self.session.session_id))
+    FileHandler.uploadfile(video_file, 'final_videos/{}.mp4'.format(self.session.session_id))
     session =self.session
     session.video = 'final_videos/{}.mp4'.format(self.session.session_id)
     session.save()

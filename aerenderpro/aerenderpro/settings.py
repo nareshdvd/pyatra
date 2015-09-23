@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'renderapi',
     'djcelery',
 )
 
@@ -80,7 +81,7 @@ DATABASES = {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'aerenderpro',
     'USER' : 'root',
-    'PASSWORD' : 'root',
+    'PASSWORD' : 'pyatrapass098',
     'HOST' : 'localhost'
   }
 }
