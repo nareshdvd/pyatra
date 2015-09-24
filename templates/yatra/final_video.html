@@ -1,0 +1,26 @@
+{% extends 'yatra/layout.html' %}
+{% load commontags %}
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="/static/yatra/css/video-js.css"/>
+{% endblock %}
+
+{% block main_container %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-6 col-sm-offset-3">
+          <video class="video-js vjs-default-skin" controls preload="none" width="80%" height="200" poster="{{selected_category.cover_image.url}}" data-setup='{ "controls": true, "autoplay": false, "preload": "false" }'>
+            <source src="{{video_session.video.url}}?ts={{''|curr_timestamp}}" type='video/mp4' />
+            <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' />
+            <source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg' />
+            <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_js %}
+  <script type="text/javascript" src="/static/yatra/js/video.js"></script>
+  <script type="text/javascript" src="/static/yatra/js/popcorn.js"></script>
+{% endblock %}

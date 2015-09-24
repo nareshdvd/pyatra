@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 import shutil
 from django.http import HttpResponse
-from renderapi.tasks import render_process
+from renderapi.tasks import render_process, test_render_process
 def process(args):
   pr = Popen(args, stderr=subprocess.STDOUT)
   pr.wait()
@@ -46,16 +46,17 @@ def render(request):
   except Exception as ex:
     print ex
     return HttpResponse(json.dumps({'status' : 'hold', 'message' : 'On Hold for now'}), content_type='application/json')
-  render_process.delay(render_job_id, [
-    r'/Applications/Adobe After Effects CC 2014/aerender',
-    '-project',
-    template_project_file_path,
-    '-comp',
-    'final_comp',
-    '-mp',
-    '-output',
-    output_path
-  ])
+  # render_process.delay(render_job_id, [
+  #   r'/Applications/Adobe After Effects CC 2014/aerender',
+  #   '-project',
+  #   template_project_file_path,
+  #   '-comp',
+  #   'final_comp',
+  #   '-mp',
+  #   '-output',
+  #   output_path
+  # ])
+  test_render_process.delay(render_job_id, [])
 
   return HttpResponse(json.dumps({'status' : 'hold', 'message' : 'On Hold for now'}), content_type='application/json')
 

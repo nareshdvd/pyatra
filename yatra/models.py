@@ -595,6 +595,7 @@ class RenderJob(models.Model):
     self.status_message = message
     FileHandler.uploadfile(video_file, 'final_videos/{}.mp4'.format(self.session.session_id))
     session =self.session
+    session.video_generated = True
     session.video = 'final_videos/{}.mp4'.format(self.session.session_id)
     session.save()
     self.save()

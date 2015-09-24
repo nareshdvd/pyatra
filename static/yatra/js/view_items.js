@@ -278,6 +278,19 @@ $(document).on("click", "#apply_changes", function(){
   }
 });
 
+$(document).on("click", "#render", function(){
+  var $this = $(this);
+  var url = $this.data("href");
+  $.ajax({
+    url: url,
+    data: {},
+    type: 'get',
+    success: function(retdata){
+      $(".progress-row").show();
+    }
+  });
+});
+
 function save_modified_video($save_btn){
   console.log($("#cutter-slider").slider("values"));
   var values = $("#cutter-slider").slider("values");

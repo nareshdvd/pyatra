@@ -1,6 +1,26 @@
 {% extends 'yatra/layout.html' %}
 {% load commontags %}
 {% block extra_css %}
+  <script type="text/javascript" src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io.connect('http://localhost:8080');
+    console.log(socket);
+    var myVar;
+    var expected_percentages = [5, 50, 60, 70, 80, 90, 100];
+    socket.on("progresschannel", function(message) {
+      var message = JSON.parse(message);
+      console.log(message);
+      if(message.render_process_status != undefined){
+        if(message.render_process_status == "finished"){
+          $(".notification-row .alert").addClass("alert-info").html("Your video is ready, please wait, we are redirecting you to your video link");
+          $(".notification-row").show()
+          setTimeout(function () {
+            window.location.href = "yatra/final_video";
+          }, 3000);
+        }
+      }
+    });
+  </script>
   <link rel="stylesheet" type="text/css" href="/static/yatra/jquery-ui/jquery-ui.min.css"/>
   <link rel="stylesheet" type="text/css" href="/static/yatra/css/video-js.css"/>
   <link rel="stylesheet" type="text/css" href="/static/yatra/css/cropper/cropper.css"/>
@@ -22,6 +42,11 @@
   </style>
 {% endblock %}
 {% block main_container %}
+  <div class="row notification-row" style="display: none;">
+    <div class="col-sm-12">
+      <div class="alert" style="margin-top: 10px;"></div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-sm-12">
       <h2 class="page-heading text-center">Items</h2>
@@ -39,7 +64,7 @@
           </video>
           <div class="row">
             <div class="col-sm-12">
-              <a class="btn-1" id="render" href="/yatra/render">Render</a>
+              <a class="btn-1" id="render" data-href="/yatra/render">Render</a>
             </div>
           </div>
         </div>

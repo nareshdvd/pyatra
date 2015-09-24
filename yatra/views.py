@@ -216,3 +216,17 @@ def receive_rendered_video(request):
   render_job = RenderJob.objects.get(pk=render_job_id)
   render_job.finish('Video generated', video_file)
   return JsonResponse({'status' : 'success'})
+
+
+def final_video(request):
+  video_session_id = request.session['current_video_session_id']
+  video_session = VideoSession.objects.get(pk=video_session_id)
+  if video_session.video_generated == False:
+    return HttpResponseRedirect('/yatra/items')
+  response_dict = {
+    'video_session' : video_session
+  }
+  selected_category_id = request.session['selected_category_id']
+  selected_category = Category.objects.get(pk=selected_category_id)
+  response_dict['selected_category'] = selected_category
+  return render_to_response("yatra/final_video.html", response_dict, RequestContext(request))

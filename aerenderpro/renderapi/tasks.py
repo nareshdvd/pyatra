@@ -4,9 +4,19 @@ from subprocess import Popen
 import os
 import requests
 from aerenderpro.settings import *
+from renderapi.realtime_info import *
 def sys_process(args):
   pr = Popen(args, stderr=subprocess.STDOUT)
   pr.wait()
+
+
+@celery_app.task
+def test_render_process(render_job_id, process_params):
+  import time
+  time.sleep(10)
+  send_realtime_info({'render_process_status': 'finished'})
+
+
 
 @celery_app.task
 def render_process(render_job_id, process_params):

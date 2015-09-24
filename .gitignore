@@ -1,6 +1,7 @@
 /aerenderpro/media/extracted_projects/*
 /aerenderpro/media/final_videos/*
 /aerenderpro/media/compressed_projects/*
+/aerenderpro/media/process_dir/*
 *.DS_Store
 /media/category_images/*
 /media/final_videos/*

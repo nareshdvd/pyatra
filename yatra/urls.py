@@ -16,4 +16,5 @@ urlpatterns = [
   url(r'items/(?P<item_number>[0-9]+)/save_cropped_video', views.save_cropped_video, name="save_cropped_video"),
   url(r'render$', views.render, name='render'),
   url(r'receive_rendered_video$', csrf_exempt(views.receive_rendered_video), name='receive_rendered_video'),
+  url(r'final_video$', views.final_video, name='final_video'),
 ]
