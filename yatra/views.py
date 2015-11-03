@@ -106,6 +106,30 @@ def view_edit_item(request, item_number):
     response_dict['selected_category'] = selected_category
     return render_to_response("yatra/video_edit_modal.html", response_dict, RequestContext(request))
 
+def upload_items(request):
+  from lib.querystring_parser import parser
+
+  form_data = parser.parse(request.POST.urlencode())['files']
+  files_data = request.FILES.dict()
+  video_session_id = request.session['current_video_session_id']
+  video_session = VideoSession.objects.get(pk=video_session_id)
+  response_dict = {}
+  for k, fdata in form_data.items():
+    file_number = int(fdata['file_number']) + 1
+    file_type = fdata['file_type']
+    file = files_data['files['+ str(file_number - 1) +'][file]']
+    item = video_session.add_photo({
+      'attachment' : file,
+      'content_order' : file_number
+    })
+    item_resp = {
+      'status' : 'success',
+      'attachment_url' : item.attachment.url,
+      'resized_url' : item.resized('600X337')
+    }
+    response_dict[k] = item_resp
+  return JsonResponse(response_dict)
+
 def upload_item(request, item_number):
   files_data = request.FILES.dict()
   post_data  = request.POST.dict()

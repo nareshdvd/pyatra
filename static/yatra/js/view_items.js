@@ -1,3 +1,33 @@
+$(document).on("change", "#group-pics", function(){
+  var $this = $(this);
+  var files = $this[0].files;
+  var formdata = new FormData();
+  $.each(files, function(item_number){
+    var file = this;
+    if(file.type == "image/jpeg"){
+      formdata.append('files['+item_number+'][file_type]', 'image');
+      formdata.append('files['+item_number+'][file_number]', item_number)
+      formdata.append('files['+item_number+'][file]', file);
+      // $.each(files, function(key, value){
+
+      // });
+    }
+  });
+  $.ajax({
+    url: '/yatra/items/upload_many',
+    type: 'post',
+    data: formdata,
+    cache: false,
+    dataType: 'json',
+    processData: false,
+    contentType: false,
+    success: function(retdata){
+      console.log(retdata)
+    }
+  });
+
+});
+
 $(document).on("click", ".view-edit-item", function(){
   var $this = $(this);
   var item_number = $this.data("itemnumber");

@@ -48,8 +48,15 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-6">
       <h2 class="page-heading text-center">Items</h2>
+    </div>
+    <div class="col-sm-6">
+      <form id='group-pics-form' method="post" action="/yatra/items/upload_many">
+        <label class="btn btn-primary pull-right" for="group-pics" style="margin-top: 15px;">
+          <input type="file" id="group-pics" multiple="multiple" style="display: none;"/>Upload Images
+        </label>
+      </form>
     </div>
   </div>
   <div class="row">
