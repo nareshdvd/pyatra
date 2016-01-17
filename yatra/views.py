@@ -98,6 +98,7 @@ def view_edit_item(request, item_number):
     response_dict['item'] = item
   else:
     response_dict['item'] = None
+  response_dict['steakers'] = Steaker.objects.all()
   if item_info['file_type'] == 'image':
     return render_to_response("yatra/image_edit_modal.html", response_dict, RequestContext(request))
   else:

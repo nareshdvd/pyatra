@@ -1,3 +1,99 @@
+
+var applied_steakers = [], applied_texts = [];
+function apply_steakers(){
+  $.each(applied_steakers, function(){
+    var steaker = this;
+    apply_steaker_to_original_image(steaker);
+  });
+  $.each(applied_texts, function(){
+    var text = this;
+    apply_text_to_original_image(text)
+  });
+}
+
+
+$(document).on("click", "#steaker-tab", function(){
+  // var ctx = document.getElementById("temp-image-canvas").getContext("2d");
+  // var steaker_url = '/static/yatra/images/steaker_01.png'
+  // var steaker = new Image();
+  // steaker.onload = function(){
+  //   ctx.drawImage(steaker, 10, 0);
+  // }
+  // steaker.src = steaker_url;
+});
+
+$(document).on("click", ".steaker-sample", function(){
+  var $this= $(this);
+  $("#fake_img").remove();
+  var img_src = $this.attr("src");
+  var fake_img = new Image();
+  fake_img.src=img_src;
+  $("#temp-image-canvas").after(fake_img);
+  var $fake_img = $(fake_img);
+  $fake_img.attr("id", "fake_img");
+  $fake_img.attr("style", "position: absolute; top: 10px; left: 10px;")
+  $fake_img.draggable({
+    containment: "#temp-image-canvas"
+  });
+});
+
+$(document).on("click", "#add-steaker-btn", function(){
+  var $fake_img = $("#fake_img");
+  if($fake_img.length != 0){
+    var top = parseInt($fake_img.css("top"));
+    var left = parseInt($fake_img.css("left"));
+    var ctx = document.getElementById("temp-image-canvas").getContext("2d");
+    console.log(fake_img);
+    ctx.drawImage(fake_img, left-15, top);
+    applied_steakers.push({'steaker' : $fake_img.attr('src'), 'top' : top, 'left' : (left - 15)});
+  }
+});
+
+function apply_steaker_to_original_image(applied_steaker_arr){
+  var ctx = document.getElementById("original-image-canvas").getContext("2d");
+  var $fake_img = $("#fake_img");
+  var top = applied_steaker_arr['top'];
+  var left = applied_steaker_arr['left'];
+  ctx.drawImage(fake_img, left, top);
+}
+
+$(document).on("keyup", "#steaker-text", function(){
+  var $fake_text;
+  if($("#fake_text").length == 0){
+    var $fake_text = $("<div id='fake_text'></div>");
+    $fake_text.attr("style", "position: absolute; top: 10px; left: 10px;");
+    $("#temp-image-canvas").after($fake_text);
+  }
+  else{
+    $fake_text = $("#fake_text");
+  }
+  $fake_text.html($(this).val());
+  $fake_text.draggable({
+    containment: "#temp-image-canvas"
+  });
+});
+$(document).on("click", "#add-steaker-text", function(){
+  convert_text_to_image($("#fake_text"));
+});
+function convert_text_to_image($div){
+  var txt = $div.html();
+  var ctx = document.getElementById("temp-image-canvas").getContext("2d");
+
+  ctx.font = '20px VideoJS';
+  var top = parseInt($div.css("top"));
+  var left = parseInt($div.css("left"));
+  ctx.fillText(txt, left-15, top+19);
+  applied_texts.push({'text' : txt, 'top' : top+19, 'left' : left-15});
+}
+
+function apply_text_to_original_image(applied_text_arr){
+  var ctx = document.getElementById("original-image-canvas").getContext("2d");
+  ctx.font = '20px VideoJS';
+  var top = applied_text_arr['top'];
+  var left = applied_text_arr['left'];
+  ctx.fillText(applied_text_arr['text'], left, top);
+}
+
 $(document).on("change", "#group-pics", function(){
   var $this = $(this);
   var files = $this[0].files;
@@ -8,9 +104,6 @@ $(document).on("change", "#group-pics", function(){
       formdata.append('files['+item_number+'][file_type]', 'image');
       formdata.append('files['+item_number+'][file_number]', item_number)
       formdata.append('files['+item_number+'][file]', file);
-      // $.each(files, function(key, value){
-
-      // });
     }
   });
   $.ajax({
@@ -292,6 +385,36 @@ function apply_filters_on_original_image_and_save($save_btn){
         }
       });
     }
+    else{
+      if($save_btn.data("curraction") == "steaker"){
+        // apply_steakers();
+        Caman("#original-image-canvas", function () {
+          $.each(applied_steakers, function(){
+            var steaker = this;
+            apply_steaker_to_original_image(steaker);
+          });
+          $.each(applied_texts, function(){
+            var text = this;
+            apply_text_to_original_image(text)
+          });
+          this.render(function () {
+          var attachment = this.toBase64('jpeg').replace('data:image/jpeg;base64,', '').replace(' ', '+');
+          $.ajax({
+            url: '/yatra/items/' + itemnumber + "/save_modified",
+            type: 'post',
+            data: {'attachment' : attachment},
+            success: function(retdata){
+              // console.log(retdata);
+              // $item_image_div.css("background-image", "url('" + retdata.attachment_url + "?ts=" + get_timestamp() + "')");
+              $item_image_div.find(".item-img").attr("src", retdata.attachment_url + "?ts=" + get_timestamp());
+              // console.log($item_image_div.css('background-image').replace('url("', '').replace('")', '').replace("url('", "").replace("')", ""))
+              $save_btn.html("saved");
+            }
+          });
+        });
+        });
+      }
+    }
   }
 }
 
@@ -380,6 +503,11 @@ $(document).on("click", "#filters-tab", function(){
 $(document).on("click", "#presets-tab", function(){
   remove_cropper();
   $("#apply_changes").data("curraction", "filter");
+});
+
+$(document).on("click", "#steaker-tab", function(){
+  remove_cropper();
+  $("#apply_changes").data("curraction", "steaker");
 });
 
 function add_cropper(){

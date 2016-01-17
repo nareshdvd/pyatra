@@ -12,7 +12,7 @@
         <div class="item-preview-box">
           {% if item %}
             {% if item.is_image %}
-              <img class="filter-image-canvas" src="{{ item|get_resized:'600X337' }}"  data-caman-hidpi="{{ item|get_resized:'600X337' }}" width="600"/>
+              <img id='temp-image-canvas' class="filter-image-canvas" src="{{ item|get_resized:'600X337' }}"  data-caman-hidpi="{{ item|get_resized:'600X337' }}" width="600"/>
               <img id="original-image-canvas" src="{{item.attachment.url}}" data-caman-hidpi="{{item.attachment.url}}"/>
             {% endif %}
           {% else %}
@@ -30,6 +30,7 @@
             <li role="presentation" class="active"><a id="filters-tab" href="#normal-filters" aria-controls="normal-filters" role="tab" data-toggle="tab">Filters</a></li>
             <li role="presentation"><a id="presets-tab" href="#preset-filters" aria-controls="preset-filters" role="tab" data-toggle="tab">Presets</a></li>
             <li role="presentation"><a id="crop-tab" href="#crop-tabpanel" aria-controls="crop-tabpanel" role="tab" data-toggle="tab">Crop</a></li>
+            <li role="presentation"><a id="steaker-tab" href="#steaker-tabpanel" aria-controls="steaker-tabpanel" role="tab" data-toggle="tab">Steaker</a></li>
           </ul>
           <div class="tab-content">
             <div id="normal-filters"role="tabpanel" class="normal-filters row tab-pane active">
@@ -135,6 +136,32 @@
             <div role="tabpanel" class="tab-pane preset-filters" id="crop-tabpanel">
               <div style="margin-top: 10px; margin-left:10px">
                 <div id="demo-cropped-image"></div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="steaker-tabpanel">
+              <div style="margin-top: 10px; margin-left:10px">
+                <div class="row">
+                  <div class="col-sm-7">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <a href="javascript: void(0);" class="btn btn-primary" id="add-steaker-btn">Add Steaker</a>
+                      </div>
+                    </div>
+                    {% for steaker_group in steakers|grouped_in:3 %}
+                      <div class="row">
+                        {% for steaker in steaker_group %}
+                          <div class="col-sm-4">
+                            <img class="steaker-sample" src="{{ steaker|get_resized:'80X75' }}" width="160px"/>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="col-sm-5">
+                    <input type="text" id="steaker-text" class="form-control"/>
+                    <a class="btn btn-primary" id="add-steaker-text">Add Text</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

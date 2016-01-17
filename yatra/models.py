@@ -14,6 +14,7 @@ from os.path import isfile, join
 from pyatra.settings import *
 import shutil
 from django.db.models import Q
+import numpy
 
 def process(args):
   pr = Popen(args, stderr=subprocess.STDOUT)
@@ -614,6 +615,45 @@ class RenderJob(models.Model):
     self.render_server = render_server
     self.save()
     return data
+
+class Steaker(models.Model):
+  image = models.ImageField(upload_to='steakers')
+
+  def resized(self, width_height):
+
+    resized_dir = os.path.join(MEDIA_ROOT, 'steakers', 'resized')
+    if not os.path.exists(resized_dir):
+      os.mkdir(resized_dir)
+
+    resized_path = os.path.join(MEDIA_ROOT, 'steakers', 'resized', '{}_{}.{}'.format(self.id, width_height, 'png'))
+    resized_url = '/media/{}/resized/{}_{}.{}'.format('steakers', self.id, width_height, 'png')
+    if os.path.exists(resized_path):
+      os.remove(resized_path)
+    path = self.image.path
+
+    width = int(width_height.split('X')[0])
+    height = int(width_height.split('X')[1])
+    image = Image.open(path)
+    image = image.convert("RGBA")
+    image = image.resize((width,height), Image.ANTIALIAS)
+    image.save(resized_path, "png", quality=90)
+    return resized_url
+
+    # if image.mode not in ("L", "RGB"):
+    #   image = image.convert("RGB")
+    # image = image.resize((width,height), Image.ANTIALIAS)
+    # image.save(resized_path, "png", quality=90)
+    # return resized_url
+
+  def resize_png(self, width_height):
+    path = self.image.path
+    img = Image.open(path)
+    alphaLayer = premult[3::4] / 255.0
+    premult[::4] *= alphaLayer
+    premult[1::4] *= alphaLayer
+    premult[2::4] *= alphaLayer
+    img = Image.fromstring("RGBA", img.size, premult.tostring())
+    img.resize((75,80), Image.ANTIALIAS).save('swordresize.png')
 
 
 

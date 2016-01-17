@@ -1,0 +1,9 @@
+<div class="form-group">
+  <label class="col-sm-2 control-label">Steaker Image</label>
+  <div class="col-sm-5">
+    <input type="file" name="image" class="form-control"/>
+    {% if flash_data.errors.image %}
+      <span class="error">{{ flash_data.errors.image }}</span>
+    {% endif %}
+  </div>
+</div>

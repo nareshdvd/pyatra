@@ -3,6 +3,7 @@ from admins import views
 from admins import usage_tokens
 from admins import video_templates
 from admins import template_categories
+from admins import steakers
 
 urlpatterns = [
   url(r'^signin$', views.signin, name='signin'),
@@ -32,4 +33,12 @@ urlpatterns = [
   url(r'^template_categories/(?P<id>[0-9]+)/edit$', template_categories.edit, name='edit_template_category'),
   url(r'^template_categories/(?P<id>[0-9]+)/update$', template_categories.update, name='update_template_category'),
   url(r'^template_categories/(?P<id>[0-9]+)/delete$', template_categories.delete, name='delete_template_category'),
+
+
+  url(r'^steakers$', steakers.index, name='steakers'),
+  url(r'^steakers/new$', steakers.new, name='new_steakers'),
+  url(r'^steakers/save$', steakers.save, name='save_steakers'),
+  url(r'^steakers/(?P<id>[0-9]+)/edit$', steakers.edit, name='edit_steakers'),
+  url(r'^steakers/(?P<id>[0-9]+)/update$', steakers.update, name='update_steakers'),
+  url(r'^steakers/(?P<id>[0-9]+)/delete$', steakers.delete, name='delete_steakers'),
 ]
