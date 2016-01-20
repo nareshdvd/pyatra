@@ -1,0 +1,213 @@
+{% extends "yatra_app_layout.html" %}
+{% load common_tags %}
+{% load imagekit %}
+{% block 'st-container' %}
+  {% include 'st_menu.html' %}
+  <div class="st-content">
+    <div class="st-content-inner">
+      <div id="page" class="hfeed site">
+        {% include 'header.html' %}
+        {% include 'vertical_nav.html' %}
+        {% include 'intro_section.html' %}
+        {% include 'about_section.html' %}
+        
+        <section id="portfolio" class="group portfolio-section">
+          <div class="container-fluid">
+            <div class="row no-gutter">
+              <div class="filter">
+                <ul id="options">
+                  <li><a data-category_id="0" data-filter="*" href="#" class="category_menu_item selected">All</a></li>
+                  {% for category in categories %}
+                    <li><a data-category_id="{{category.id}}" data-filter=".{{category.title|lower}}" href="#" class="category_menu_item">{{category.title}}</a></li>
+                  {% endfor %}
+                  <li class="f-right"><a data-filter=".professional" href="#">Free</a></li>
+                  <li class="f-right"><a data-filter=".wedding" href="#">Paid</a></li>
+                </ul>
+              </div><!-- end filter -->
+              <div id="foliowrap">
+                {% for v_template in parent_templates %}
+                  <figure class="foliobox {{ v_template|get_template_category_names:' ' }}">
+                    {% generateimage 'yatra_app:thumb_372_248' source=v_template.cover_image %}
+                    <figcaption>
+                      <h3 class="foltitle">{{ v_template.title }}</h3>
+                      <span class="folcat">(Try it for free)</span><br>
+                      <span class="folcat">79.5 $</span>
+                      <h3 class="foltitle" style="position:absolute;bottom:5%;right:8%;font-size:40px">
+                        <i class="fa fa-check-square-o"></i>
+                        &nbsp;
+                        <a class="category_template_select" style="color:#fff" href="javascript: void(0);" data-template_id="{{v_template.id}}">
+                          <i class="fa fa-play-circle"></i>
+                        </a>
+                      </h3>
+                    </figcaption>
+                  </figure>
+                {% endfor %}
+              </div><!-- folio-wrap -->
+            </div><!-- end row -->
+          </div><!-- end container -->
+        </section>
+
+        <section id="features" class="group service-section onscreen fullscreen background parallax" data-img-width="1600" data-img-height="1064" data-diff="150">
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-settings.png" alt="">
+            </figure>
+            <h3 class="fea-head">CLICK & CREATE</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-params.png" alt="">
+            </figure>
+            <h3 class="fea-head">IMAGE STABILITY</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-params.png" alt="">
+            </figure>
+            <h3 class="fea-head">IMAGE STABILITY</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-photo.png" alt="">
+            </figure>
+            <h3 class="fea-head">YOUR COMMUNITY</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-calendar.png" alt="">
+            </figure>
+            <h3 class="fea-head">ALL CAMERA OPTION</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+          <div class="col-md-4 centered dark">
+            <figure>
+              <img src="/static/images/icon-camera.png" alt="">
+            </figure>
+            <h3 class="fea-head">LIGHT CONTROL</h3>
+            <div class="text">
+              <p class="fea-text">Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat</p>
+            </div>
+          </div><!-- end column -->
+
+        </section><!-- cd-section -->
+
+        <section id="testimonial" class="group testimonial-section onscreen fullscreen background parallax" data-img-width="1600" data-img-height="1064" data-diff="150">
+          <h1 class="testi">TESTIMONIALS</h1>
+          <div id="testimonial-home" class="carousel slide">
+
+            <div class="carousel-inner">
+
+              <div class="item active">
+                <figure class="ava col-md-4">
+                  <img src="/static/images/assets/ava-01.png" alt="">
+                </figure>
+                <div class="context col-md-8">
+                  <div class="inner">
+                    <h3 class="who">Reza Kurniawan, Co-Founder &amp; CEO</h3>
+                    <p>Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta </p>
+                  </div>
+                </div>
+              </div><!-- end item -->
+
+              <div class="item">
+                <figure class="ava col-md-4">
+                  <img src="/static/images/assets/ava-02.png" alt="">
+                </figure>
+                <div class="context col-md-8">
+                  <div class="inner">
+                    <h3 class="who">Kuncoro Bhakti, Engineer</h3>
+                    <p>Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta </p>
+                  </div>
+                </div>
+              </div><!-- end item -->
+
+              <div class="item">
+                <figure class="ava col-md-4">
+                  <img src="/static/images/assets/ava-03.png" alt="">
+                </figure>
+                <div class="context col-md-8">
+                  <div class="inner">
+                    <h3 class="who">Alex Wagiman, Contractor</h3>
+                    <p>Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta </p>
+                  </div>
+                </div>
+              </div><!-- end item -->
+
+            </div><!-- end carousel-inner -->
+
+            <a class="left carousel-control" href="#testimonial-home" role="button" data-slide="prev">
+              <span class="fa fa-fw fa-chevron-left"></span>
+            </a>
+            <a class="right carousel-control" href="#testimonial-home" role="button" data-slide="next">
+              <span class="fa fa-fw fa-chevron-right"></span>
+            </a>
+          </div>
+        </section><!-- cd-section -->
+        <section id="contact" class="group contact-section onscreen fullscreen background parallax" data-img-width="1600" data-img-height="1064" data-diff="150">
+          <div class="container-fluid">
+            <h1 class="testi">Contact Us</h1>
+            <div class="row">
+              <div class="col-md-5 col-md-offset-2"  style="margin-left:6.7%;">
+                <h3 class="h-add">DELHI OFFICE</h3>
+                <p class="add">Location : Kaliurang St. No 104, Sinduharjo, <br>Ngaglik, Sleman <br>Telephone : (0274) 9982732 <br>Email : Staff@localhost.net</p>
+              </div>
+              <div class="col-md-5">
+                <h3 class="h-add">MUMBAI OFFICE</h3>
+                <p class="add">Location : Kaliurang St. No 104, Sinduharjo, <br>Ngaglik, Sleman <br>Telephone : (0274) 9982732 <br>Email : Staff@localhost.net</p>
+              </div>
+            </div><!-- end row -->
+          </div><!-- end container -->
+        </section><!-- cd-section -->
+        <section id="credit" class="group footer-section onscreen fullscreen background parallax">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="footer-inner">
+                <figure>
+                  <img src="/static/images/logo-new-color.png" alt="" width="15%">
+                </figure>
+                <h3 class="animated fadeInDown">Your Journey, Frame by Frame</h3>
+                <div class="socmed">
+                  <ul>
+                    <li><a href="#"><i class="fa fa-fw fa-facebook"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-twitter"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-behance"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-instagram"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-linkedin"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-pinterest"></i></a></li>
+                    <li><a href="#"><i class="fa fa-fw fa-google-plus"></i></a></li>
+                  </ul>
+                </div><!-- end socmed -->
+
+                <div class="site-credit">
+                  <p>copyright © 2015 FOTOYATRA. All Rights Reserved.</p>
+                </div>
+
+              </div>
+            </div><!-- end row -->
+          </div><!-- end container -->
+        </section><!-- end section -->
+
+      </div><!-- end #page -->
+    </div><!-- end st-content-inner -->
+  </div><!-- end st-content -->
+{% endblock %}
