@@ -9,7 +9,6 @@ def get_template_category_names(template, separator):
 
 @register.filter('grouped_in')
 def grouped_in(arr, n):
-  print arr
   for i in xrange(0, len(arr), n):
     yield arr[i:i+n]
 

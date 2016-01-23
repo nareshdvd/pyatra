@@ -51,9 +51,8 @@ class VideoTemplate(MPTTModel):
     return cls.objects.filter(parent=None)
 
   def variations_with_self(self):
-    from itertools import chain
-    variations = self.variations.all()
-    return list(chain([self], variations))
+    return self.variations.all() | VideoTemplate.objects.filter(pk=self.id)
+    # return list(chain([self], variations))
 
   def images_count(self):
     import random
@@ -100,26 +99,26 @@ def post_save_for_video_templates(sender, instance, **kwargs):
   extract_dir = os.path.join(MEDIA_ROOT, 'extracted_projects')
   instance.extract_project(extract_dir, True)
 
-
-
 post_save.connect(post_save_for_video_templates, sender=VideoTemplate)
 
 
 class VideoSession(models.Model):
   session_id = models.CharField(max_length = 255, null = False, blank = False)
   user = models.ForeignKey(User, related_name = 'video_sessions')
-  video_template = models.ForeignKey(VideoTemplate, related_name = 'video_session')
+  video_template = models.ForeignKey(VideoTemplate, related_name = 'template_video_sessions')
+  video_category = models.ForeignKey(Category, related_name = 'category_video_sessions')
   final_video = models.CharField(max_length=2000, null = True, blank = True, default = '')
 
   @classmethod
-  def new_session(cls, user, video_template):
+  def new_session(cls, user, video_template, video_category):
     import uuid
     video_session = VideoSession.objects.filter(user=user, video_template=video_template).first()
     if video_session is None:
       video_session = VideoSession(**{
           'session_id' : str(uuid.uuid4()),
           'user_id' : user.id,
-          'video_template_id' : video_template.id
+          'video_template_id' : video_template.id,
+          'video_category_id' : video_category.id
         }
       )
       video_session.save()
@@ -153,7 +152,7 @@ class VideoSession(models.Model):
       return i - j
 
     def get_file_type(file_name):
-      if file_name.split('.')[1] in ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'JPEG', 'JPG', 'PNG', 'GIF', 'BMP']:
+      if file_name.split('.')[-1] in ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'JPEG', 'JPG', 'PNG', 'GIF', 'BMP']:
         return 'image'
       else:
         return 'video'
@@ -166,11 +165,21 @@ class VideoSession(models.Model):
         session_item = SessionItem(**{
           'video_session_id' : self.id,
           'item_number' : i,
-          'item_type' : file_item.split('.')[-1],
+          'item_type' : get_file_type(file_item),
           'item_file' : None
         })
         session_item.save()
       i = i + 1
+
+  @classmethod
+  def user_category_sessions(cls, user_id, category_id):
+    return cls.objects.filter(video_template__categories__id=category_id, user_id=user_id).all()
+
+  @classmethod
+  def user_parent_template_variation_sessions(cls, user_id, parent_template):
+    print cls.objects.filter(user_id=user_id, video_template_id__in=get_values_array(parent_template.variations_with_self().values('id'), 'id')).query
+    return cls.objects.filter(user_id=user_id, video_template_id__in=get_values_array(parent_template.variations_with_self().values('id'), 'id'))
+
 
   def render():
     pass
@@ -200,20 +209,36 @@ class SessionItem(models.Model):
           file_path_splitted = self.item_file.path.split('.')
           if ext == 'jpg':
             file_path_splitted[-1] = 'jpeg'
-            new_file_path = file_path_splitted.join('.')
+            new_file_path = '.'.join(file_path_splitted)
             os.rename(self.item_file.path, new_file_path)
+            self.item_file = new_file_path
+            self.save()
           elif ext == 'png':
-            convert_png_to_jpeg(self.item_file.path)
+            new_file_path = convert_png_to_jpeg(self.item_file.path)
+            self.item_file = new_file_path
+            self.save()
       else:
         if ext != 'flv':
           if ext == 'mp4':
-            convert_video(self.item_file.path, 'mp4', 'flv')
+            new_file_path = convert_video(self.item_file.path, 'mp4', 'flv')
+            self.item_file = new_file_path
+            self.save()
+
           elif ext == 'avi':
-            convert_video(self.item_file.path, 'avi', 'flv')
+            new_file_path = convert_video(self.item_file.path, 'avi', 'flv')
+            self.item_file = new_file_path
+            self.save()
+
           elif ext == 'mpeg' or ext == 'mpg':
-            convert_video(self.item_file.path, 'mpeg', 'flv')
+            new_file_path = convert_video(self.item_file.path, 'mpeg', 'flv')
+            self.item_file = new_file_path
+            self.save()
+
           elif ext == 'wmv':
-            convert_video(self.item_file.path, 'wmv', 'flv')
+            new_file_path = convert_video(self.item_file.path, 'wmv', 'flv')
+            self.item_file = new_file_path
+            self.save()
+
 
 def post_save_for_session_item(sender, instance, **kwargs):
   instance.handle_file_conversions()
@@ -231,6 +256,7 @@ def convert_png_to_jpeg(path):
     path,
     convert_path
   ])
+  return convert_path
 
 def convert_video(path, source_format, destination_format):
   convert_path = path.split('.')
@@ -295,8 +321,14 @@ def convert_video(path, source_format, destination_format):
       "convert_path "
     ]
   process(process_params)
+  return convert_path
 
 
 class Steaker(models.Model):
   title = models.CharField(max_length=1000, null=False, blank = False)
   image = models.ImageField(upload_to="steakers", null = False, blank = False)
+
+
+def get_values_array(items, key):
+  from operator import itemgetter
+  return map(itemgetter(key), items)

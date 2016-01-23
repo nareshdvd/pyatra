@@ -1,0 +1,31 @@
+{% load common_tags %}
+<style type="text/css">
+  #edit-video-modal .modal-content{
+    border-radius: 0px !important;
+  }
+</style>
+<div id="edit-video-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Preview/Edit Video</h4>
+      </div>
+      <div class="modal-body">
+        <div id="temp_video_div">
+
+        </div>
+        <div id="video_modifications_div">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#crop_video" aria-controls="crop_video" role="tab" data-toggle="tab">Crop</a></li>
+          </ul>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="crop_video">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

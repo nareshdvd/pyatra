@@ -33,7 +33,7 @@
         </nav>
         <section id="testimonial" class="group testimonial-section onscreen fullscreen background parallax" data-img-width="1600" data-img-height="1064" data-diff="150">
           <div id="testimonial-home" class="carousel slide">
-            <div class="carousel-inner bc parent_templates">
+            <div class="carousel-inner bc parent_templates" data-category_id="{{category.id}}">
               {% for v_template in category.parent_templates.all %}
                 <div class="item {% if template_id == v_template.id %}active{% endif %} ab" data-template_id="{{v_template.id}}">
                   <div class="col-md-12" >
@@ -64,7 +64,7 @@
             </a>
           </div>
         </section><!-- cd-section -->
-        <section style="background-color:#110e02;padding-top: 5%;min-height:900px;" id="features" class="group service-section onscreen  background parallax"  style="">
+        <section style="background-color:#110e02;padding-top: 5%;min-height:900px;" id="features" class=""  style="">
 
           <div class="row" style="padding-left:35%"> 
             <div class="col-md-3 hh dark">Picture Movie</div>
@@ -83,19 +83,24 @@
               <span class="fa fa-fw fa-chevron-right"></span>
             </a>
           </div>
-          <div class="col-md-12 up-head"><span style="font-size:24px" class="yellow">IMAGES </span></div>
-          <div class="col-md-12" style="padding-left: 10%;padding-right: 8%;">
-            <!-- <form action="/upload-target" class="dropzone" id="dropzone_images"></form> -->
-            <form>
-              <div id="uploader">
-                
-              </div>
-            </form>
+          <div id="uploader_container_div"><!-- this is the main div all the javascript depends upon, do not change in the html structure inside this div -->
+            <div class="row">
+              <div class="col-md-12 up-head"><span style="font-size:24px" class="yellow">IMAGES </span></div>
+            </div>
+            <div class="row">
+              <div id="uploader_images" class="col-md-12"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 up-head" ><span style="font-size:24px" class="yellow">VIDEOS </span></div>
+            </div>
+            <div class="row">
+              <div id="uploader_videos" class="col-md-12"></div>
+            </div>
           </div>
-          <br><br>
-          <div class="col-md-12 up-head" ><span style="font-size:24px" class="yellow">Video </span></div>
-          <div class="col-md-12" style="padding-left: 10%;padding-right: 8%;">
-            <!-- <form action="upload.php" class="dropzone" id="dropzone_videos"></form> -->
+          <div class="row"> 
+            <div class="col-md-3 col-md-offset-6" style="margin-top:2% !important">
+              <a class="hh dark center" id="upload_added_files">Upload</a>
+            </div>
           </div>
           <div class="row" style="padding-left:46%;"> 
             <div class="col-md-3 hh dark center" style="margin-top:2% !important">Render</div>
@@ -159,6 +164,9 @@
           </div><!-- end container -->
         </section><!-- end section -->
       </div>
+    </div>
+    <div id="all_uploaded_files">
+
     </div>
   </div>
 {% endblock %}
