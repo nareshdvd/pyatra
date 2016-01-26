@@ -1,3 +1,47 @@
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+        $("#ajax-loader").css("height", getActualWidth() + "px")
+        $("#ajax-loader").show();
+    },
+    complete: function(){
+       $("#ajax-loader").hide();
+    }
+});
+
+function getActualWidth() {
+    var actualWidth = window.innerWidth ||
+                      document.documentElement.clientWidth ||
+                      document.body.clientWidth ||
+                      document.body.offsetWidth;
+
+    return actualWidth;
+}
+
+
 (function($) {
   'use strict';
   $(document).ready(function(){
@@ -298,10 +342,10 @@ $(document).on("click", ".show-edit-video-btn", function(e){
   var file_id = $(this).data("id");
   $temp_video = $("#original_video_" + file_id).clone();
   $temp_video.attr("id", "temp_video_" + file_id);
-  $temp_video.addClass("temp_modal_video");
-  $temp_video.prop("controls", true);
+  $temp_video.removeAttr("style");
+  $temp_video.addClass("temp_modal_video video-js vjs-default-skin");
   $("#temp_video_div").append($temp_video);
-  $temp_video[0].currentTime = 1;
+  videojs("temp_video_" + file_id, {"controls": true,"autoplay": false,"preload": "true"}, function(){});
   $("#edit-video-modal").modal("show");
 });
 
@@ -371,49 +415,67 @@ $(document).on("click", ".select-template-link", function(){
     type: 'get',
     data: {},
     success: function(retdata){
+      console.log("i m here");
       current_template_items_info = retdata.items;
-      $("#uploader_images").html("");
-      $("#uploader_videos").html("");
-      var image_items = $(retdata.items).map(function(){
-        if(this.item_type == "image"){
-          return this;
-        }
-        else{
-          return null;
-        }
-      });
-      $("#uploader_images").data("items_count", image_items.length);
-      $("#uploader_videos").data("items_count", retdata.items.length - image_items.length);
-      $.each(retdata.items, function(){
-        var item = this;
-        if(item.item_file != "" && item.item_type == "image"){
-          create_preview_of_file(item.item_file, "uploader_images", item.item_type);
-        }
-        else{
-          if(item.item_file != "" && item.item_type == "video"){
-            create_preview_of_file(item.item_file, "uploader_videos", item.item_type);
-          }
-        }
-      });
-      document.getElementById("uploader_images").ondragover = function(e){
-        e.preventDefault();
-        return false;
-      }
-      document.getElementById("uploader_images").ondrop = function(e){
-        e.preventDefault();
-        handle_dragged_files(e.dataTransfer.files, this.id, "image");
-      }
-      document.getElementById("uploader_videos").ondragover = function(e){
-        e.preventDefault();
-        return false;
-      }
-      document.getElementById("uploader_videos").ondrop = function(e){
-        e.preventDefault();
-        handle_dragged_files(e.dataTransfer.files, this.id, "video");
-      }
+      generate_ui_for_uploaders(template_id, category_id);
     }
   });
 });
+
+function generate_ui_for_uploaders(template_id, category_id){
+  $uploader_images_row = $("#uploader_images").closest(".row")
+  $uploader_videos_row = $("#uploader_videos").closest(".row")
+  $("#uploader_images").remove();
+  $("#uploader_videos").remove();
+  $uploader_images_row.append("<div id='uploader_images' class='col-md-12'></div>");
+  $uploader_videos_row.append("<div id='uploader_videos' class='col-md-12'></div>");
+  var image_item_numbers = [];
+  var video_item_numbers = [];
+
+  var image_items = $(current_template_items_info).map(function(){
+    if(this.item_type == "image"){
+      image_item_numbers.push(this.item_number)
+      return this;
+    }
+    else{
+      video_item_numbers.push(this.item_number)
+      return null;
+    }
+  });
+  $("#uploader_images").data("items_count", image_items.length);
+  $("#uploader_images").data("item_numbers", image_item_numbers);
+  $("#uploader_videos").data("items_count", current_template_items_info.length - image_items.length);
+  $("#uploader_videos").data("item_numbers", video_item_numbers);
+  $.each(current_template_items_info, function(){
+    $("#upload_added_files").data("category_id", category_id);
+    $("#upload_added_files").data("template_id", template_id);
+    var item = this;
+    if(item.item_file != "" && item.item_type == "image"){
+      create_preview_of_file(item.item_file, "uploader_images", item.item_type, item.item_number);
+    }
+    else{
+      if(item.item_file != "" && item.item_type == "video"){
+        create_preview_of_file(item.item_file, "uploader_videos", item.item_type, item.item_number);
+      }
+    }
+  });
+  document.getElementById("uploader_images").ondragover = function(e){
+    e.preventDefault();
+    return false;
+  }
+  document.getElementById("uploader_images").ondrop = function(e){
+    e.preventDefault();
+    handle_dragged_files(e.dataTransfer.files, this.id, "image");
+  }
+  document.getElementById("uploader_videos").ondragover = function(e){
+    e.preventDefault();
+    return false;
+  }
+  document.getElementById("uploader_videos").ondrop = function(e){
+    e.preventDefault();
+    handle_dragged_files(e.dataTransfer.files, this.id, "video");
+  }
+}
 
 $(document).on("click", ".update_changes_to_original_image", function(e){
   var temp_image_id = get_temp_image_id();
@@ -429,12 +491,14 @@ $(document).on("hidden.bs.modal", "#edit-image-modal", function(){
   destroy_cropper();
   setup_image_edit_modal($modal, object_id);
 });
-
+var test;
 $(document).on("click", "#upload_added_files", function(){
   var all_data_to_upload = [];
   var sorted_image_ids = [];
   var sorted_video_ids = [];
   var combined_sorted_ids = [];
+  var category_id = $(this).data("category_id");
+  var template_id = $(this).data("template_id");
   $("#uploader_images").find(".item_row").each(function(){
     var $item_row = $(this);
     sorted_image_ids.push($item_row.sortable("toArray"));
@@ -458,11 +522,9 @@ $(document).on("click", "#upload_added_files", function(){
   });
   $.each(combined_sorted_ids, function(i, val){
     var dom_element_id = val;
-    console.log(dom_element_id)
-    console.log(typeof dom_element_id);
     if((typeof dom_element_id) == "string"){
       var $dom_item = $("#" + dom_element_id);
-      var src;
+      var src; 
       if($dom_item.hasClass("img_col")){
         src = $dom_item.find(".portlet-content img").first().attr("src");
       }
@@ -470,8 +532,43 @@ $(document).on("click", "#upload_added_files", function(){
         src = $dom_item.find(".portlet-content video source").first().attr("src");
       }
       current_template_items_info[i].item_file = src;
+      current_template_items_info[i].dom_element_id = dom_element_id;
+    }
+    else{
+      current_template_items_info[i].item_file = '';
+      current_template_items_info[i].dom_element_id = '';
+    };
+  });
+  $.each([current_template_items_info], function(i, group){
+    console.log(group);
+    if(group.length != 0){
+      $.ajax({
+        url: '/upload_images/' + category_id + "/" + template_id,
+        data: {group: group},
+        type: 'post',
+        success: function(retdata){
+          current_template_items_info = retdata.items;
+          generate_ui_for_uploaders(template_id, category_id);
+        }
+      });
     }
   });
+});
+
+$(document).on("click", ".delete-image-btn", function(){
+  var file_id = $(this).closest(".col-sm-2").attr("id");
+  var file_type = "image";
+  var file_number = $(this).data("item_number");
+  remove_preview_of_file(file_id, file_type, file_number)
+  // $(this).closest(".img_col").remove();
+});
+
+$(document).on("click", ".delete-video-btn", function(){
+  var file_id = $(this).closest(".col-sm-2").attr("id");
+  var file_type = "video";
+  var file_number = $(this).data("item_number");
+  remove_preview_of_file(file_id, file_type, file_number)
+  // $(this).closest(".video_col").remove();
 });
 
 function update_changes_to_original_image(temp_image_id){
@@ -486,15 +583,28 @@ function handle_dragged_files(files, uploader_div_id, file_type){
   $.each(files, function(){
     var file = this;
     var $uploader_div = $("#" + uploader_div_id);
+    var item_numbers = $uploader_div.data("item_numbers");
     var max_items_count = parseInt($uploader_div.data("items_count"));
     var already_added_items_count = $uploader_div.find(".item_col").length;
     if(already_added_items_count < max_items_count){
-      create_preview_of_file(file, uploader_div_id, file_type);
+      create_preview_of_file(file, uploader_div_id, file_type, item_numbers[already_added_items_count]);
     }
   })
 }
 
-function create_preview_of_file(file, uploader_div_id, file_type){
+function refresh_preview_of_file(file_id, file_type, file_path){
+  var $dom_item = $("#" + file_id);
+  if(file_type == "image"){
+    $dom_item.find(".portlet-content img").first().attr("src", file_path);
+  }
+  else{
+    $dom_item.find(".portlet-content video source").first().attr("src", file_path);
+    var webm_file_path = file_path.replace(".mp4", ".webm")
+    $dom_item.find(".portlet-content video source").last().attr("src", webm_file_path);
+  }
+}
+
+function create_preview_of_file(file, uploader_div_id, file_type, file_number){
   var $holder = $("#" + uploader_div_id);
   if($holder.find(".row").length == 0)
   {
@@ -514,11 +624,11 @@ function create_preview_of_file(file, uploader_div_id, file_type){
   })
   var $last_col = $last_row.find(".col-sm-2").last();
   if(file_type == "image"){
-    $last_col.html(get_new_portlet("show-edit-image-btn"));
+    $last_col.html(get_new_portlet("show-edit-image-btn", "delete-image-btn", file_number));
     $last_col.addClass("img_col").addClass("item_col");
   }
   else{
-    $last_col.html(get_new_portlet("show-edit-video-btn"));
+    $last_col.html(get_new_portlet("show-edit-video-btn", "delete-video-btn", file_number));
     $last_col.addClass("video_col").addClass("item_col"); 
   }
   var file_id = Math.random().toString(36).substr(2, 35);
@@ -541,7 +651,7 @@ function create_preview_of_file(file, uploader_div_id, file_type){
     else{
       // file is a url
       var image = new Image();
-      image.src = file;
+      image.src = file + "?r=" + get_random_number();
       $(image).attr("style", "width : 100%; min-height: 105px;");
       $(image).attr("id", "original_img_" + file_id);
       $last_col.find(".portlet-content").html($(image));
@@ -557,7 +667,6 @@ function create_preview_of_file(file, uploader_div_id, file_type){
         var $video = $("<video style='width: 100px;' id='original_video_" + file_id + "'>" + "<source src='"+evt.target.result+"' type='video/mp4'></source >Your browser does not support the video tag." + "</video>");
         $last_col.find(".portlet-content").html($video);
         var video = document.getElementById("original_video_" + file_id);
-        video.currentTime = 1;
         $last_col.find(".show-edit-video-btn").data("id", file_id);
         
       };
@@ -565,22 +674,39 @@ function create_preview_of_file(file, uploader_div_id, file_type){
     }
     else{
       // file is a url of video file on server
-      var $video = $("<video style='width: 100px;' id='original_video_" + file_id + "'>" + "<source src='"+file+"' type='video/mp4'></source >Your browser does not support the video tag." + "</video>");
+      var video_html = "<video style='width: 100px;' id='original_video_" + file_id + "'>";
+      video_html += "<source src='"+file + "?r=" + get_random_number() +"' type='video/mp4'></source >";
+      video_html += "<source src='"+file.replace(".mp4", ".webm") + "?r=" + get_random_number() +"' type='video/webm'></source >";
+      video_html += "Your browser does not support the video tag.";
+      video_html += "</video>";
+      var $video = $(video_html);
       $last_col.find(".portlet-content").html($video);
       var video = document.getElementById("original_video_" + file_id);
-      video.currentTime = 1;
       $last_col.find(".show-edit-video-btn").data("id", file_id);
     }
   }
 }
 
-function get_new_portlet(edit_btn_class){
+function get_random_number(){
+  return parseInt(Math.random() * 1000).toString() + Date.now().toString();
+}
+function remove_preview_of_file(file_id, file_type, file_number){
+  // if(file_type == "image"){
+  //   current_template_items_info[parseInt(file_number)]
+  // }
+  // else{
+  //   current_template_items_info
+  // }
+  $("#" + file_id).remove();
+}
+
+function get_new_portlet(edit_btn_class, delete_btn_class, file_number){
   var htm = '<div class="portlet ui-widget ui-widget-content ui-helper-clearfix ui-corner-all">';
     htm += '<div class="portlet-header ui-widget-header ui-corner-all">'
       htm += '<div class="pull-left"><span class="sortable-item-mover"><i class="glyphicon glyphicon-move"></i></span><span>Image<span></div>';
       htm += '<div class="pull-right text-right">';
         htm += "<span style='display: inline-block;'><i class='glyphicon glyphicon-edit " + edit_btn_class + "'></i></span>";
-        htm += "<span style='display: inline-block;'><i class='glyphicon glyphicon-remove'></i></span>";
+        htm += "<span style='display: inline-block;'><i class='glyphicon glyphicon-remove " + delete_btn_class + "' data-item_number='" + file_number + "'></i></span>";
       htm += '</div>';
     htm += '</div>';
     htm += '<div class="portlet-content"></div>';

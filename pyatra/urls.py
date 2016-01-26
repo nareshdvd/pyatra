@@ -26,8 +26,8 @@ urlpatterns = [
   url(r'^edit/(?P<id>[0-9]+)$', yatra_app_views.edit),
   url(r'^variations/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.variations),
   url(r'^select_variation/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.select_variation),
-  url(r'^upload_images/(?P<template_id>[0-9]+)$', yatra_app_views.upload_images),
-  url(r'^upload_videos/(?P<template_id>[0-9]+)$', yatra_app_views.upload_videos),
+  url(r'^upload_images/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.upload_images),
+  url(r'^upload_videos/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.upload_videos),
   url(r'^login$', accounts_views.login),
   url(r'^login_post$', accounts_views.login_post),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

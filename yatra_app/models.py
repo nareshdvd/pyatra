@@ -5,7 +5,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from django.contrib.auth.models import User
 import subprocess
 from subprocess import Popen
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from pyatra.settings import MEDIA_ROOT
 import os
 from os import listdir
@@ -142,6 +142,37 @@ class VideoSession(models.Model):
       os.mkdir(self.extract_dir(False))
     self.video_template.extract_project(self.extract_dir(False), False)
 
+  # @classmethod
+  # def get_items_to_swap(cls, all_items_info):
+  #   swap_items = []
+  #   for item_info_1 in all_items_info:
+  #     if item_info_1["item_file"].startswith("/media/user_extracted_projects/"):
+  #       item_file_path = item_info_1["item_file"].split("/")
+  #       file_num = item_file_path[-1].split(".")[0]
+  #       if str(file_num) != str(item_info_1["item_number"]):
+  #         # file position is changed for this item
+  #         if item_info1["item_type"] == "image":
+  #           pass
+  #         else:
+  #           pass
+
+  # def swap_session_items(self, item_number_1, item_number_2):
+  #   item_1 = self.session_items.filter(item_number = item_number_1)
+  #   item_2 = self.session_items.filter(item_number = item_number_2)
+
+  def move_files_to_temp(self):
+    temp_dir_name = os.path.join(self.extract_dir(False), "temp")
+    if os.path.exists(temp_dir_name):
+      print "deleting temp directory"
+      shutil.rmtree(temp_dir_name)
+    os.mkdir(temp_dir_name)
+    for session_item in self.session_items.all():
+      if session_item.item_file and os.path.exists(session_item.item_file.path):
+        shutil.copy(session_item.item_file.path, temp_dir_name)
+        if session_item.item_type != "image":
+          shutil.copy(session_item.webm_path(), temp_dir_name)
+
+
   def add_session_items(self):
     self.extract_project()
     footage_items_dir = self.footage_item_dir(False)
@@ -181,28 +212,163 @@ class VideoSession(models.Model):
     return cls.objects.filter(user_id=user_id, video_template_id__in=get_values_array(parent_template.variations_with_self().values('id'), 'id'))
 
 
-  def render():
+  def render(self):
     pass
+
+  def pre_delete(self):
+    # print "STARTED DELETING SESSION ITEMS"
+    # self.session_items.all().delete()
+    # print "END DELETING SESSION ITEMS"
+    extract_dir_full_path = self.extract_dir(False)
+    print "STARTED DELETING extract dir"
+    shutil.rmtree(extract_dir_full_path)
+    print "END DELETING extract dir"
+    if self.final_video:
+      if os.path.exists(self.final_video.path):
+        print "STARTED DELETING final video"
+        os.remove(self.final_video.path)
+        print "END DELETING final video"
 
 
 
 def post_save_for_video_session(sender, instance, **kwargs):
   instance.add_session_items()
 
+def pre_delete_for_video_session(sender, instance, **kwargs):
+  instance.pre_delete()
 
+pre_delete.connect(pre_delete_for_video_session, sender = VideoSession)
 post_save.connect(post_save_for_video_session, sender=VideoSession)
 
-def upload_dir(instance, filename):
-  return os.path.join(instance.video_session.extract_dir(True), 'footage_items')
+def session_item_relative_upload_path(instance, filename):
+  return os.path.join(instance.video_session.footage_item_dir(True), filename)
+
+def session_item_absolute_upload_path(instance, filename):
+  return os.path.join(instance.video_session.footage_item_dir(False), filename)
+
+def media_relative_path(path):
+  return path.replace(MEDIA_ROOT + "/", '')
 
 class SessionItem(models.Model):
   video_session = models.ForeignKey(VideoSession, related_name='session_items')
   item_number = models.IntegerField()
   item_type = models.CharField(max_length=100, choices=(('image','image'),('video','video')))
-  item_file = models.FileField(upload_to=upload_dir, null = True, blank = True)
+  item_file = models.FileField(upload_to=session_item_relative_upload_path, null = True, blank = True)
+
+  def get_temp_files_path(self):
+    temp_dir_name = os.path.join(self.video_session.extract_dir(False), "temp")
+    if self.item_type == "image":
+      return [os.path.join(temp_dir_name, self.item_file.path.split("/")[-1])]
+    else:
+      mp4_path = os.path.join(temp_dir_name, self.item_file.path.split("/")[-1]);
+      webm_path = os.path.join(temp_dir_name, self.webm_path().split("/")[-1])
+      return [mp4_path, webm_path]
+  def webm_path(self):
+    if self.item_type == "video" and self.item_file:
+      mp4_path = self.item_file.path
+      webm_path = self.item_file.path.split(".")
+      webm_path[-1] = "webm"
+      webm_path = ".".join(webm_path)
+      return webm_path
+    else:
+      return None
+  def delete_item_file(self):
+    if self.item_file:
+      if self.item_type == "image":
+        if os.path.exists(self.item_file.path):
+          os.remove(self.item_file.path)
+      else:
+        mp4_path = self.item_file.path
+        webm_path = self.webm_path()
+        if os.path.exists(webm_path):
+          os.remove(webm_path)
+
+
+  def replace_from_temp(self, file_name_number):
+    temp_dir_name = os.path.join(self.video_session.extract_dir(False), "temp")
+    if self.item_type == "image":
+      temp_file_path = os.path.join(temp_dir_name, "{}.{}".format(file_name_number, "jpeg"))
+      if self.item_file and os.path.exists(self.item_file.path):
+        orig_file_path = self.item_file.path
+        os.remove(orig_file_path)
+      else:
+        orig_file_path = os.path.join(self.video_session.footage_item_dir(False), "{}.{}".format(self.item_number, "jpeg"))
+      shutil.copyfile(temp_file_path, orig_file_path)
+      self.item_file = orig_file_path.split("media/")[-1]
+      self.prevent_callback = True
+      self.save()
+    else:
+      mp4_temp_file_path = os.path.join(temp_dir_name, "{}.{}".format(file_name_number, "mp4"))
+      webm_temp_file_path = os.path.join(temp_dir_name, "{}.{}".format(file_name_number, "webm"))
+      if self.item_file and os.path.exists(self.item_file.path):
+        orig_mp4_file_path = self.item_file.path
+        os.remove(orig_mp4_file_path)  
+        orig_webm_file_path = self.webm_path()
+        os.remove(orig_webm_file_path)
+      else:
+        orig_mp4_file_path = os.path.join(self.video_session.footage_item_dir(False), "{}.{}".format(self.item_number, "mp4"))
+        orig_webm_file_path = os.path.join(self.video_session.footage_item_dir(False), "{}.{}".format(self.item_number, "webm"))
+      shutil.copyfile(mp4_temp_file_path, orig_mp4_file_path)
+      shutil.copyfile(webm_temp_file_path, orig_webm_file_path)
+      self.item_file = orig_mp4_file_path.split("media/")[-1]
+      self.prevent_callback = True
+      self.save()
+
+
+  def save_item_file(self, base64str):
+    import base64
+    import cStringIO
+    from django.core.files.uploadedfile import InMemoryUploadedFile
+    ext = ''
+    content_type = ''
+    extra_data = ''
+
+    #delete previous file
+    if self.item_file and os.path.exists(self.item_file.path):
+      self.delete_item_file()
+
+    if self.item_type == "image":
+      if base64str.startswith('data:image/png;base64,'):
+        ext = 'png'
+        content_type = 'image/png'
+        extra_data = 'data:image/png;base64,'
+      elif base64str.startswith('data:image/jpeg;base64,'):
+        ext = 'jpeg'
+        content_type = 'image/jpeg'
+        extra_data = 'data:image/jpeg;base64,'
+    elif self.item_type == "video":
+      if base64str.startswith('data:video/mp4;base64,'):
+        ext = 'mp4'
+        content_type = 'video/mp4'
+        extra_data = 'data:video/mp4;base64,'
+      elif base64str.startswith('data:video/mpeg;base64,'):
+        ext = 'mpeg'
+        content_type = 'video/mpeg'
+        extra_data = 'data:video/mpeg;base64,'
+      elif base64str.startswith('data:video/webm;base64,'):
+        ext = 'webm'
+        content_type = 'video/webm'
+        extra_data = 'data:video/webm;base64,'
+    base64str = base64str.replace(extra_data,'')
+    base64str = base64str.replace(" ", "+")
+    base64str_decoded = base64.b64decode(base64str)
+    file = cStringIO.StringIO(base64str_decoded)
+    uploaded_file = InMemoryUploadedFile(file,
+      field_name='item_file',
+      name=".".join([str(self.item_number), ext]),
+      content_type=content_type,
+      size=len(file.getvalue()),
+      charset=None
+    )
+
+    #checking if the file exists as it was previously extracted from archive and then removing it
+    if os.path.exists(session_item_absolute_upload_path(self, ".".join([str(self.item_number), ext]))):
+      os.remove(session_item_absolute_upload_path(self, ".".join([str(self.item_number), ext])))
+    self.item_file = uploaded_file
+    self.save()
 
   def handle_file_conversions(self):
-    if bool(self.item_file.name) is not False:
+    if self.item_file and os.path.exists(self.item_file.path):
       ext = self.item_file.path.split('.')[-1]
       if self.item_type == 'image':
         if ext != 'jpeg':
@@ -211,40 +377,68 @@ class SessionItem(models.Model):
             file_path_splitted[-1] = 'jpeg'
             new_file_path = '.'.join(file_path_splitted)
             os.rename(self.item_file.path, new_file_path)
-            self.item_file = new_file_path
+            self.item_file = media_relative_path(new_file_path)
             self.save()
           elif ext == 'png':
             new_file_path = convert_png_to_jpeg(self.item_file.path)
-            self.item_file = new_file_path
+            os.remove(self.item_file.path)
+            self.item_file = media_relative_path(new_file_path)
             self.save()
       else:
-        if ext != 'flv':
-          if ext == 'mp4':
-            new_file_path = convert_video(self.item_file.path, 'mp4', 'flv')
-            self.item_file = new_file_path
+        if ext != 'mp4':
+          if ext == 'flv':
+            new_file_path = convert_video(self.item_file.path, 'flv', 'mp4')
+            os.remove(self.item_file.path)
+            convert_video(new_file_path, 'mp4', 'webm')
+            self.item_file = media_relative_path(new_file_path)
             self.save()
 
           elif ext == 'avi':
-            new_file_path = convert_video(self.item_file.path, 'avi', 'flv')
-            self.item_file = new_file_path
+            new_file_path = convert_video(self.item_file.path, 'avi', 'mp4')
+            os.remove(self.item_file.path)
+            convert_video(new_file_path, 'mp4', 'webm')
+            self.item_file = media_relative_path(new_file_path)
             self.save()
 
           elif ext == 'mpeg' or ext == 'mpg':
-            new_file_path = convert_video(self.item_file.path, 'mpeg', 'flv')
-            self.item_file = new_file_path
+            new_file_path = convert_video(self.item_file.path, 'mpeg', 'mp4')
+            os.remove(self.item_file.path)
+            convert_video(new_file_path, 'mp4', 'webm')
+            self.item_file = media_relative_path(new_file_path)
             self.save()
 
           elif ext == 'wmv':
-            new_file_path = convert_video(self.item_file.path, 'wmv', 'flv')
-            self.item_file = new_file_path
+            new_file_path = convert_video(self.item_file.path, 'wmv', 'mp4')
+            os.remove(self.item_file.path)
+            convert_video(new_file_path, 'mp4', 'webm')
+            self.item_file = media_relative_path(new_file_path)
             self.save()
+          elif ext == 'webm':
+            new_file_path = convert_video(self.item_file.path, 'webm', 'mp4')
+            self.item_file = media_relative_path(new_file_path)
+            self.save()
+        else:
+          webm_path = self.webm_path()
+          if webm_path is not None and not os.path.exists(self.webm_path()):
+            convert_video(self.item_file.path, 'mp4', 'webm')
 
 
 def post_save_for_session_item(sender, instance, **kwargs):
-  instance.handle_file_conversions()
+  prevent_callback = False
+  try:
+    prevent_callback = instance.prevent_callback
+  except:
+    pass
+  if not prevent_callback:
+    instance.handle_file_conversions()
+
+def pre_delete_for_session_item(sender, instance, **kwargs):
+  print "STARTED DELETING ITEM FILE FOR FILE NUMBER : " + str(instance.item_number)
+  instance.delete_item_file()
+  print "END DELETING ITEM FILE FOR FILE NUMBER : " + str(instance.item_number)
 
 post_save.connect(post_save_for_session_item, sender=SessionItem)
-
+pre_delete.connect(pre_delete_for_session_item, sender = SessionItem)
     
 def convert_png_to_jpeg(path):
   convert_path = path.split('.')
@@ -260,66 +454,119 @@ def convert_png_to_jpeg(path):
 
 def convert_video(path, source_format, destination_format):
   convert_path = path.split('.')
-  convert_path[-1] = 'flv'
-  convert_path = ".".join(convert_path)
   process_params = []
-  if source_format == 'mp4':
-    process_params = ["ffmpeg"
-      ,"-i"
-      ,path
-      ,"-c:v"
-      ,"libx264"
-      ,"-ar"
-      ,"22050"
-      ,"-crf"
-      ,"28"
-      ,convert_path
-    ]
-  elif source_format == 'avi':
-    process_params = [
-      "ffmpeg", 
-      "-i ",
-      path,
-      "-y",
-      "-ab",
-      "56",
-      "-ar",
-      "44100",
-      "-b",
-      "200k",
-      "-r",
-      "15",
-      "-f",
-      "flv",
-      convert_path
-    ]
-  elif source_form == 'mpeg' or source_form == 'mpg':
+  if source_format == 'mp4' and destination_format == 'webm':
+    convert_path[-1] = 'webm'
+    convert_path = ".".join(convert_path)
     process_params = [
       "ffmpeg",
       "-i",
       path,
-      "-deinterlace",
-      "-ar",
-      "44100",
-      "-r",
-      "25",
-      "-qmin",
-      "3",
+      "-acodec",
+      "libvorbis",
+      "-aq",
+      "5",
+      "-ac",
+      "2",
       "-qmax",
-      "6",
+      "25",
+      "-threads",
+      "2",
       convert_path
     ]
-  elif source_form == 'wmv':
-    process_params = [
-      "ffmpeg",
-      "-i",
-      "path",
-      "-ar",
-      "44100",
-      "-vcodec",
-      "flv",
-      "convert_path "
-    ]
+  elif destination_format == 'mp4':
+    convert_path[-1] = 'mp4'
+    convert_path = ".".join(convert_path)
+    if os.path.exists(convert_path):
+      os.remove(convert_path)
+    elif source_format == 'webm':
+      convert_path[-1] = 'mp4'
+      convert_path = ".".join(convert_path)
+      process_params = [
+        "ffmpeg",
+        "-i",
+        path,
+        "-qscale",
+        "0",
+        convert_path
+      ]
+    if source_format == 'flv':
+      process_params = ["ffmpeg",
+        "-i",
+        path,
+        "-c:v",
+        "libx264",
+        "-crf",
+        "19",
+        "-strict",
+        "experimental",
+        convert_path
+      ]
+    elif source_format == 'avi':
+      process_params = [
+        "ffmpeg",
+        "-i",
+        path,
+        "-c:v",
+        "libx264",
+        "-crf",
+        "19",
+        "-preset",
+        "slow",
+        "-c:a",
+        "libfaac",
+        "-b:a",
+        "192k",
+        "-ac",
+        "2",
+        convert_path
+      ]
+    elif (source_format == 'mpeg' or source_format == 'mpg'):
+      process_params = [
+        "ffmpeg",
+        "-i",
+        path,
+        "-vcodec",
+        "libx264",
+        "-crf",
+        "15",
+        "-s",
+        "640x480",
+        "-aspect",
+        "640:480",
+        "-r",
+        "30",
+        "-threads",
+        "4",
+        "-acodec",
+        "libvo_aacenc",
+        "-ab",
+        "128k",
+        "-ar",
+        "32000",
+        "-async",
+        "32000",
+        "-ac",
+        "2",
+        "-scodec",
+        "copy",
+        convert_path
+      ]
+    elif source_format == 'wmv':
+      process_params = [
+        "ffmpeg",
+        "-i",
+        path,
+        "-c:v",
+        "libx264",
+        "-crf",
+        "23",
+        "-c:a",
+        "libfaac",
+        "-q:a",
+        "100",
+        convert_path
+      ]
   process(process_params)
   return convert_path
 

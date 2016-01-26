@@ -20,8 +20,7 @@
 
     <!-- Bootstrap -->
     <link href="/static/css/styles.css" rel="stylesheet">
-    <link href="/static/css/dropzone.css" rel="stylesheet">
-
+    <link href="http://vjs.zencdn.net/5.4.6/video-js.css" rel="stylesheet">
     <!--Font awesome icons -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
@@ -62,6 +61,7 @@
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
     <script src="/static/js/plupload.full.min.js"></script>
     <script src="/static/js/jquery.ui.plupload.js"></script>
+    <script src="http://vjs.zencdn.net/5.4.6/video.js"></script>
     <script src="/static/js/caman/caman.full.js"></script>
     <script src="/static/js/cropper.js"></script>
     <script src="/static/js/main.js"></script>
@@ -72,5 +72,8 @@
     {% if video_edit_modal_needed %}
         {% include 'yatra_app/video_edit_modal.html' %}
     {% endif %}
+    <div id="ajax-loader" style="display: none;">
+        <img src="/static/images/ajax_loader.gif"/>
+    </div>
   </body>
 </html>

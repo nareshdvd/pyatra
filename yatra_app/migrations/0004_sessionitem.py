@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('item_number', models.IntegerField()),
                 ('item_type', models.CharField(max_length=100, choices=[('image', 'image'), ('video', 'video')])),
-                ('item_file', models.FileField(null=True, upload_to=yatra_app.models.upload_dir, blank=True)),
+                ('item_file', models.FileField(null=True, upload_to=yatra_app.models.session_item_relative_upload_path, blank=True)),
                 ('video_session', models.ForeignKey(related_name='session_items', to='yatra_app.VideoSession')),
             ],
         ),

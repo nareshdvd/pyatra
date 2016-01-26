@@ -4,6 +4,8 @@ from django.template import RequestContext
 from yatra_app.models import Category, VideoTemplate, VideoSession, SessionItem, Steaker
 from django.contrib.auth.models import User
 import json
+from IPython import embed
+from django.db.models import Q
 def home(request):
   categories = Category.objects.all()
   parent_templates = VideoTemplate.get_only_parent_templates()
@@ -40,24 +42,37 @@ def select_variation(request, category_id, template_id):
   response_json = render_to_response('yatra_app/_images_and_videos.json', {'video_session' : video_session, 'category' : category, 'template' : template})
   return HttpResponse(response_json, content_type = 'application/json')
 
-def upload_images(request, template_id):
-  images = request.FILES.getlist('dropzone_images')
-  print request.FILES
-  # user = get_logged_in_user()
-  # video_template = VideoTemplate.objects.get(pk=template_id)
-  # video_session = VideoSession.objects.filter(user=user, video_template=video_template).first()
-  # if video_session is None:
-  #   video_session = VideoSession.new_session(user, video_template)
-  # for image in images:
-  #   session_item = SessionItem.objects.filter(video_session=video_session).first()
-  #   if session_item is not None:
-  #     video_session.add_session_items()
-  #   session_item = SessionItem.objects.filter(video_session=video_session).first()
-  #   session_item.item_file = image
-  #   session_item.save()
-
-    
-  return HttpResponse("OK");
+from lib.parser.parser import *
+def upload_images(request, category_id, template_id):
+  user = get_logged_in_user()
+  images = parse(request.POST.urlencode(), normalized=True)
+  video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
+  category = Category.objects.get(pk = category_id)
+  template = VideoTemplate.objects.get(pk = template_id)
+  current_group = images['group']
+  items_to_delete = []
+  video_session.move_files_to_temp()
+  for item in current_group:
+    if item["item_file"] != "":
+      if item["item_file"].startswith("/media/user_extracted_projects/"):
+        file_name_number = item["item_file"].split("/")[-1].split(".")[0]
+        if str(file_name_number) != str(item["item_number"]):
+          # file is replaced
+          session_item = video_session.session_items.filter(item_number=item["item_number"]).first()
+          session_item.replace_from_temp(file_name_number)  
+      else:
+        session_item = video_session.session_items.filter(item_number=item["item_number"]).first()
+        session_item.save_item_file(item["item_file"])
+    else:
+      items_to_delete.append(item["item_number"])
+  if len(items_to_delete) != 0:
+    other_items = video_session.session_items.filter(item_number__in=items_to_delete).filter(~Q( item_file = ''))
+    for item in other_items:
+      item.item_file = ''
+      item.prevent_callback = True
+      item.save()
+  response_json = render_to_response('yatra_app/_images_and_videos.json', {'video_session' : video_session, 'category' : category, 'template' : template})
+  return HttpResponse(response_json, content_type = 'application/json')
 
 def upload_videos(request, template_id):
   videos = request.FILES.getlist('dropzone_videos')
@@ -65,3 +80,7 @@ def upload_videos(request, template_id):
 
 def get_logged_in_user():
   return User.objects.get(pk=2)
+
+# convert valuesqueryset to dict
+def ValuesQuerySetToDict(vqs):
+  return [item for item in vqs]

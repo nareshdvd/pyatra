@@ -1,2 +1,10 @@
 /pyatra/settings.py
 *.pyc
+/media/category_covers/*
+/media/compressed_projects/*
+/media/video_template_covers/*
+/media/extracted_projects/*
+/media/demo_files/*
+media/steakers/*
+/media/CACHE/*
+/media/user_extracted_projects/*
