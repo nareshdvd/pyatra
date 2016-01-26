@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 import json
 from IPython import embed
 from django.db.models import Q
+from lib.parser.parser import *
 def home(request):
   categories = Category.objects.all()
   parent_templates = VideoTemplate.get_only_parent_templates()
@@ -42,7 +43,7 @@ def select_variation(request, category_id, template_id):
   response_json = render_to_response('yatra_app/_images_and_videos.json', {'video_session' : video_session, 'category' : category, 'template' : template})
   return HttpResponse(response_json, content_type = 'application/json')
 
-from lib.parser.parser import *
+
 def upload_images(request, category_id, template_id):
   user = get_logged_in_user()
   images = parse(request.POST.urlencode(), normalized=True)
@@ -68,11 +69,41 @@ def upload_images(request, category_id, template_id):
   if len(items_to_delete) != 0:
     other_items = video_session.session_items.filter(item_number__in=items_to_delete).filter(~Q( item_file = ''))
     for item in other_items:
-      item.item_file = ''
+      if item.item_type == "video":
+        item.delete_webm_file()
       item.prevent_callback = True
+      item.item_file = ''
       item.save()
   response_json = render_to_response('yatra_app/_images_and_videos.json', {'video_session' : video_session, 'category' : category, 'template' : template})
   return HttpResponse(response_json, content_type = 'application/json')
+
+def render(request, category_id, template_id):
+  user = get_logged_in_user()
+  video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
+  video_session.render(category_id, template_id)
+  return HttpResponse(json.dumps({"status" : "ok"}), content_type = 'application/json')
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def receive_video(request):
+  mp4_file = request.FILES['mp4_file']
+  video_session_id = request.POST.get('video_session_id')
+  video_session = VideoSession.objects.get(pk = video_session_id)
+  video_session.save_final_video(mp4_file)
+  return HttpResponse(json.dumps({'status' : "OK"}), content_type = 'application/json')
+  # return HttpResponse(json.dumps({"final_video" : video_session.final_video.url}), content_type = "application/json")
+
+def look_for_video(request, category_id, template_id):
+  user = get_logged_in_user()
+  video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
+  retdata = {}
+  if video_session.final_video:
+    retdata['video_generated'] = True
+    retdata['video_path'] = video_session.final_video.url
+  else:
+    retdata['video_generated'] = False
+  return HttpResponse(json.dumps(retdata), content_type = "application/json")
 
 def upload_videos(request, template_id):
   videos = request.FILES.getlist('dropzone_videos')

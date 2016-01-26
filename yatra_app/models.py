@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 import subprocess
 from subprocess import Popen
 from django.db.models.signals import post_save, pre_delete
-from pyatra.settings import MEDIA_ROOT
+from pyatra.settings import MEDIA_ROOT, RENDERER_SERVER
 import os
 from os import listdir
 import shutil
@@ -101,13 +101,22 @@ def post_save_for_video_templates(sender, instance, **kwargs):
 
 post_save.connect(post_save_for_video_templates, sender=VideoTemplate)
 
+def final_video_relative_upload_path(instance, filename):
+  return os.path.join(instance.extract_dir(True), filename)
 
 class VideoSession(models.Model):
   session_id = models.CharField(max_length = 255, null = False, blank = False)
   user = models.ForeignKey(User, related_name = 'video_sessions')
   video_template = models.ForeignKey(VideoTemplate, related_name = 'template_video_sessions')
   video_category = models.ForeignKey(Category, related_name = 'category_video_sessions')
-  final_video = models.CharField(max_length=2000, null = True, blank = True, default = '')
+  final_video = models.FileField(upload_to=final_video_relative_upload_path, null = True, blank = True, default = '')
+
+  def save_final_video(self, mp4_file):
+    if self.final_video and os.path.exists(self.final_video.path):
+      os.remove(self.final_video.path)
+    self.final_video = mp4_file
+    self.prevent_callback = True
+    self.save()
 
   @classmethod
   def new_session(cls, user, video_template, video_category):
@@ -141,24 +150,6 @@ class VideoSession(models.Model):
     if not os.path.exists(self.extract_dir(False)):
       os.mkdir(self.extract_dir(False))
     self.video_template.extract_project(self.extract_dir(False), False)
-
-  # @classmethod
-  # def get_items_to_swap(cls, all_items_info):
-  #   swap_items = []
-  #   for item_info_1 in all_items_info:
-  #     if item_info_1["item_file"].startswith("/media/user_extracted_projects/"):
-  #       item_file_path = item_info_1["item_file"].split("/")
-  #       file_num = item_file_path[-1].split(".")[0]
-  #       if str(file_num) != str(item_info_1["item_number"]):
-  #         # file position is changed for this item
-  #         if item_info1["item_type"] == "image":
-  #           pass
-  #         else:
-  #           pass
-
-  # def swap_session_items(self, item_number_1, item_number_2):
-  #   item_1 = self.session_items.filter(item_number = item_number_1)
-  #   item_2 = self.session_items.filter(item_number = item_number_2)
 
   def move_files_to_temp(self):
     temp_dir_name = os.path.join(self.extract_dir(False), "temp")
@@ -212,8 +203,17 @@ class VideoSession(models.Model):
     return cls.objects.filter(user_id=user_id, video_template_id__in=get_values_array(parent_template.variations_with_self().values('id'), 'id'))
 
 
-  def render(self):
-    pass
+  def render(self, category_id, template_id):
+    import requests
+    zipped_project_path = self.zip_the_project()
+    files = {'zipped_project': open(zipped_project_path, 'rb')}
+    r = requests.post("{}/{}".format(RENDERER_SERVER, 'render'), files = files, data = {'category_id' : category_id, 'template_id' : template_id, 'video_session_id' : self.id})
+
+  def zip_the_project(self):
+    if os.path.exists(self.project_dir() + ".zip"):
+      os.remove(self.project_dir() + ".zip")
+    os.chdir(self.extract_dir())
+    return shutil.make_archive(self.project_dir(), format='zip', root_dir=self.project_dir())
 
   def pre_delete(self):
     # print "STARTED DELETING SESSION ITEMS"
@@ -232,7 +232,13 @@ class VideoSession(models.Model):
 
 
 def post_save_for_video_session(sender, instance, **kwargs):
-  instance.add_session_items()
+  prevent_callback = False
+  try:
+    prevent_callback = instance.prevent_callback
+  except:
+    pass
+  if not prevent_callback:
+    instance.add_session_items()
 
 def pre_delete_for_video_session(sender, instance, **kwargs):
   instance.pre_delete()
@@ -263,6 +269,7 @@ class SessionItem(models.Model):
       mp4_path = os.path.join(temp_dir_name, self.item_file.path.split("/")[-1]);
       webm_path = os.path.join(temp_dir_name, self.webm_path().split("/")[-1])
       return [mp4_path, webm_path]
+
   def webm_path(self):
     if self.item_type == "video" and self.item_file:
       mp4_path = self.item_file.path
@@ -272,6 +279,11 @@ class SessionItem(models.Model):
       return webm_path
     else:
       return None
+
+  def delete_webm_file(self):
+    if os.path.exists(self.webm_path()):
+      os.remove(self.webm_path())
+
   def delete_item_file(self):
     if self.item_file:
       if self.item_type == "image":
@@ -391,6 +403,7 @@ class SessionItem(models.Model):
             os.remove(self.item_file.path)
             convert_video(new_file_path, 'mp4', 'webm')
             self.item_file = media_relative_path(new_file_path)
+            self.prevent_callback = True
             self.save()
 
           elif ext == 'avi':
@@ -398,6 +411,7 @@ class SessionItem(models.Model):
             os.remove(self.item_file.path)
             convert_video(new_file_path, 'mp4', 'webm')
             self.item_file = media_relative_path(new_file_path)
+            self.prevent_callback = True
             self.save()
 
           elif ext == 'mpeg' or ext == 'mpg':
@@ -405,6 +419,7 @@ class SessionItem(models.Model):
             os.remove(self.item_file.path)
             convert_video(new_file_path, 'mp4', 'webm')
             self.item_file = media_relative_path(new_file_path)
+            self.prevent_callback = True
             self.save()
 
           elif ext == 'wmv':
@@ -412,10 +427,12 @@ class SessionItem(models.Model):
             os.remove(self.item_file.path)
             convert_video(new_file_path, 'mp4', 'webm')
             self.item_file = media_relative_path(new_file_path)
+            self.prevent_callback = True
             self.save()
           elif ext == 'webm':
             new_file_path = convert_video(self.item_file.path, 'webm', 'mp4')
             self.item_file = media_relative_path(new_file_path)
+            self.prevent_callback = True
             self.save()
         else:
           webm_path = self.webm_path()
