@@ -15,13 +15,12 @@ Including another URLconf
   3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.conf.urls import url
-from django.contrib import admin
-# import yatra_app.views as yatra_app_views
-# import accounts.views as accounts_views
+import render_app.views as render_app_views
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
-  url(r'^admin/', admin.site.urls),
+  url(r'^render$', render_app_views.render),
+  # url(r'^$', yatra_app_views.home),
   # url(r'^$', yatra_app_views.home),
   # url(r'^edit/(?P<id>[0-9]+)$', yatra_app_views.edit),
   # url(r'^variations/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.variations),
