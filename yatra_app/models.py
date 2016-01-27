@@ -11,6 +11,7 @@ import os
 from os import listdir
 import shutil
 from os.path import isfile, join
+from yatra_app.imagegenerators import MainImageVariation
 # Create your models here.
 
 def process(args):
@@ -396,6 +397,15 @@ class SessionItem(models.Model):
             os.remove(self.item_file.path)
             self.item_file = media_relative_path(new_file_path)
             self.save()
+        else:
+          new_file_path = self.item_file.path
+        new_file = open(new_file_path)
+        image_generator = MainImageVariation(source=self.item_file)
+        result = image_generator.generate()
+        os.remove(new_file_path)
+        destination = open(new_file_path, 'w')
+        destination.write(result.read())
+        destination.close()
       else:
         if ext != 'mp4':
           if ext == 'flv':

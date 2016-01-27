@@ -33,9 +33,11 @@
                       <span class="folcat">(Try it for free)</span><br>
                       <span class="folcat">79.5 $</span>
                       <h3 class="foltitle" style="position:absolute;bottom:5%;right:8%;font-size:40px">
-                        <i class="fa fa-check-square-o"></i>
+                        <a class="category_template_select" href="javascript: void(0);" data-template_id="{{v_template.id}}" data-category_id="{{v_template.categories.first.id}}">
+                          <i class="fa fa-check-square-o category_template_select" style="color:#fff"></i>
+                        </a>
                         &nbsp;
-                        <a class="category_template_select" style="color:#fff" href="javascript: void(0);" data-template_id="{{v_template.id}}" data-category_id="{{v_template.categories.first.id}}">
+                        <a class="play_video_select" data-template_id="{{v_template.id}}" data-category_id="{{v_template.categories.first.id}}" data-play_url="{{v_template.demo_file.url}}">
                           <i class="fa fa-play-circle"></i>
                         </a>
                       </h3>

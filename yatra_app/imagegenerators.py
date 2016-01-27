@@ -12,3 +12,8 @@ class ThumbnailHeight_70(ImageSpec):
   format = 'png'
   options = {'quality': 80}
 register.generator('yatra_app:thumb_height_70', ThumbnailHeight_70)
+
+class MainImageVariation(ImageSpec):
+  processors = [ResizeToFit(width=720, height=405)]
+  format = 'jpeg'
+  options = {'quality' : 90}

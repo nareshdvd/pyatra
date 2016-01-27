@@ -37,6 +37,11 @@
               {% for v_template in category.parent_templates.all %}
                 <div class="item {% if template_id == v_template.id %}active{% endif %} ab" data-template_id="{{v_template.id}}">
                   <div class="col-md-12" >
+                    <!-- <div class='cp_template_video'>
+                      <video class="video-js vjs-default-skin" id='cp_template_video_{{v_template.id}}' data-cimage="{{ v_template.cover_image.url }}">
+                        <source src="{{v_template.demo_file.url}}" type='video/mp4'></source>
+                      </video>
+                    </div> -->
                     <img src="{{ v_template.cover_image.url }}" alt="" class="img-g">
                     <div class="col-md-12" style="text-align:center;color:#fff;text-align: left;">
                       <div class="col-md-12 pd15">

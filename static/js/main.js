@@ -595,6 +595,38 @@ $(document).on("click", "#render_session", function(){
   })
 });
 
+$(document).on("ready", function(){
+  if($(".cp_template_video").length != 0){
+    $(".cp_template_video video").each(function(){
+      var $v = $(this);
+      var id = $v.attr("id");
+      var poster = $v.data("cimage");
+      videojs(id, {"controls": true,"autoplay": false,"preload": "true", "poster" : poster}, function(){});
+    });
+  }
+});
+
+$(document).on("click", ".play_video_select", function(){
+  var category_id = $(this).data("category_id");
+  var template_id = $(this).data("template_id");
+  var play_url = $(this).data("play_url");
+  $("#play-video-modal").data("category_id", category_id);
+  $("#play-video-modal").data("template_id", template_id);
+  $("#play-video-modal").data("play_url", play_url);
+  video_html = "<video id='play_video_video'>";
+  video_html += "<source src='" + play_url + "' type='video/mp4'></source>"
+  video_html += "</video>";
+  if($("#play_video_video").length != 0){
+    $("#play_video_video").remove();
+    var player = videojs('play_video_video');
+    player.dispose();
+  }
+  $("#play_video_div").html(video_html);
+  $("#play_video_video").addClass("temp_modal_video video-js vjs-default-skin");
+  videojs("play_video_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
+  $("#play-video-modal").modal("show");
+});
+
 function after_render_procedure(category_id, template_id){
   if(category_id != undefined && template_id != undefined){
     $.ajax({
