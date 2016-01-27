@@ -36,6 +36,7 @@ def render_process(render_job_id, process_params):
   files = {'file' : open(final_video_path, 'rb')}
   data = requests.post(finish_url, data={'render_job_id' : render_job_id}, files=files).json()
   delete_mov.delay(mov_path)
+  send_realtime_info({'render_process_status': 'finished'})
 
 @celery_app.task
 def delete_mov(path):

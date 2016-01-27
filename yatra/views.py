@@ -45,6 +45,8 @@ def select_template(request, id):
     return HttpResponseRedirect('/yatra/templates')
   request.session['selected_template_id'] = template.id
   video_session = VideoSession.get_or_generate(request.user, template)
+  if video_session.video_generated == True:
+    return HttpResponseRedirect('/yatra/final_video')
   request.session['current_video_session_id'] = video_session.id
   return HttpResponseRedirect('/yatra/items')
 

@@ -281,6 +281,7 @@ $(document).on("click", "#apply_changes", function(){
 $(document).on("click", "#render", function(){
   var $this = $(this);
   var url = $this.data("href");
+  console.log("im here");
   $.ajax({
     url: url,
     data: {},

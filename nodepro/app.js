@@ -4,7 +4,7 @@ var amqp = require('amqp');
 
 var server = http.createServer(function(req, res) {
   console.log("server started")
-}).listen(8080, '0.0.0.0');
+}).listen(9043, '0.0.0.0');
 
 server.on('error', function (e) {
   // Handle your error here

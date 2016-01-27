@@ -239,6 +239,7 @@ class Template(models.Model):
     video_session.compressed_file = compressed_file_path
     video_session.save()
     render_server = RenderServer.get_server()
+    print render_server
     data = render_server.add_job_to_render(video_session)
     return data
 
@@ -271,7 +272,7 @@ class Template(models.Model):
     footage_items_dir = os.path.join(uncompressed_project_dir, 'footage_items')
 
 
-    onlyfiles = [ f for f in listdir(footage_items_dir) if (isfile(join(footage_items_dir,f)) and (f.endswith('jpeg') or f.endswith('mp4')))]
+    onlyfiles = [ f for f in listdir(footage_items_dir) if (isfile(join(footage_items_dir,f)) and (f.endswith('jpeg') or f.endswith('mp4')) and (not f.startswith('.')))]
     # files_count = len(onlyfiles)
     def numeric_compare(i, j):
       i = int(i.split('.')[0])
@@ -562,6 +563,8 @@ class RenderServer(models.Model):
       })
       job.save()
       data = job.start()
+    print job
+    print data
     return data
 
 class RenderJob(models.Model):
@@ -575,6 +578,8 @@ class RenderJob(models.Model):
     render_job_url = '{}/{}'.format(self.render_server.base_url, 'render')
     files = {'file' : open(self.session.compressed_file, 'rb')}
     data = requests.post(render_job_url, data={'render_job_id' : self.id}, files=files).json()
+    print data
+    print "IAAM IN start"
     self.status = data['status']
     self.status_message = data['message']
     self.save()

@@ -1,9 +1,9 @@
 {% extends 'yatra/layout.html' %}
 {% load commontags %}
 {% block extra_css %}
-  <script type="text/javascript" src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="http://localhost:9043/socket.io/socket.io.js"></script>
   <script>
-    var socket = io.connect('http://localhost:8080');
+    var socket = io.connect('http://localhost:9043');
     console.log(socket);
     var myVar;
     var expected_percentages = [5, 50, 60, 70, 80, 90, 100];
@@ -64,7 +64,7 @@
           </video>
           <div class="row">
             <div class="col-sm-12">
-              <a class="btn-1" id="render" data-href="/yatra/render">Render</a>
+              <a class="btn-1" href="javascript: void(0);" id="render" data-href="/yatra/render">Render</a>
             </div>
           </div>
         </div>
