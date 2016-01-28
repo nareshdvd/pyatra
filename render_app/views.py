@@ -9,6 +9,10 @@ import shutil
 import requests
 import subprocess
 from subprocess import Popen
+from render_app.lib import process
+from render_app.tasks import delayed_process
+import requests
+import json
 # Create your views here.
 
 @csrf_exempt
@@ -19,11 +23,8 @@ def render(request):
   zipped_project = request.FILES['zipped_project']
   save_zipped_project(video_session_id, zipped_project)
   extract_zipped_project(video_session_id, zipped_project)
-  mp4_file = render_project(video_session_id, zipped_project)
-  import requests
-  files = {'mp4_file': open(mp4_file, 'rb')}
-  r = requests.post("{}/{}".format(MAIN_SERVER, 'receive_video'), files = files, data = {'category_id' : category_id, 'template_id' : template_id, 'video_session_id' : video_session_id})
-  return HttpResponse("OK")
+  process_set_for_rendering = render_project(video_session_id, zipped_project)
+  return HttpResponse(json.dumps({'status' : process_set_for_rendering}), content_type='application/json')
 
 
 def get_video_session_dir(video_session_id):
@@ -62,10 +63,25 @@ def extract_zipped_project(video_session_id, zipped_project_file):
 def render_project(video_session_id, zipped_project_file):
   video_session_dir = get_video_session_dir(video_session_id)
   zipped_project_path = os.path.join(video_session_dir, str(zipped_project_file))
-  # process([aerender params here])
-  return os.path.join(MEDIA_ROOT, '3.mp4')
+  project_name = zipped_project_path.split("/")[-1].replace(".zip", "")
+  project_path = os.path.join(video_session_dir, project_name)
+  template_file_path = os.path.join(project_path, 'template.aep')
+  output_file_path = os.path.join(video_session_dir, 'final_video.mp4')
+  rendered = render_process(template_file_path, output_file_path)
+  return True
 
 
-def process(args):
-  pr = Popen(args, stderr=subprocess.STDOUT)
-  pr.wait()
+def render_process(template_file_path, output_file_path):
+  process_params = [
+    r'/Applications/Adobe After Effects CC 2014/aerender',
+    '-project',
+    template_file_path,
+    '-comp',
+    'final_comp',
+    '-mp',
+    '-output',
+    output_file_path
+  ]
+  delayed_process.delay(process_params)
+  return True
+

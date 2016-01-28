@@ -1,0 +1,2 @@
+start nginx ==> nginx
+start mysql ==> mysql.server start
