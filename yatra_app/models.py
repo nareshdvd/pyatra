@@ -208,7 +208,7 @@ class VideoSession(models.Model):
     import requests
     zipped_project_path = self.zip_the_project()
     files = {'zipped_project': open(zipped_project_path, 'rb')}
-    r = requests.post("{}/{}".format(RENDERER_SERVER, 'render'), files = files, data = {'category_id' : category_id, 'template_id' : template_id, 'video_session_id' : self.id})
+    r = requests.post("{}/{}/{}/{}".format(RENDERER_SERVER, 'render_process', category_id, template_id), files = files, data = {'category_id' : category_id, 'template_id' : template_id, 'video_session_id' : self.id})
 
   def zip_the_project(self):
     if os.path.exists(self.project_dir() + ".zip"):
@@ -315,7 +315,7 @@ class SessionItem(models.Model):
       webm_temp_file_path = os.path.join(temp_dir_name, "{}.{}".format(file_name_number, "webm"))
       if self.item_file and os.path.exists(self.item_file.path):
         orig_mp4_file_path = self.item_file.path
-        os.remove(orig_mp4_file_path)  
+        os.remove(orig_mp4_file_path)
         orig_webm_file_path = self.webm_path()
         os.remove(orig_webm_file_path)
       else:
@@ -466,7 +466,7 @@ def pre_delete_for_session_item(sender, instance, **kwargs):
 
 post_save.connect(post_save_for_session_item, sender=SessionItem)
 pre_delete.connect(pre_delete_for_session_item, sender = SessionItem)
-    
+
 def convert_png_to_jpeg(path):
   convert_path = path.split('.')
   convert_path[-1] = 'jpeg'

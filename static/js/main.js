@@ -267,7 +267,7 @@ function getActualWidth() {
       }
       var $optionSet = $this.parents('#options');
       $optionSet.find('.selected').removeClass('selected');
-      $this.addClass('selected'); 
+      $this.addClass('selected');
     });
   });
 })( jQuery );
@@ -383,7 +383,7 @@ $(document).on("click", ".place-steaker-btn", function(){
     var top = parseInt($steaker_image.css("top"));
 
     var temp_image_id = get_temp_image_id();
-    
+
     modifications_to_current_image.added_steakers.push({
       id_on_dom : $steaker_image.data("steakerid"),
       top: top,
@@ -526,7 +526,7 @@ $(document).on("click", "#upload_added_files", function(){
     var dom_element_id = val;
     if((typeof dom_element_id) == "string"){
       var $dom_item = $("#" + dom_element_id);
-      var src; 
+      var src;
       if($dom_item.hasClass("img_col")){
         src = $dom_item.find(".portlet-content img").first().attr("src");
       }
@@ -684,7 +684,7 @@ function create_preview_of_file(file, uploader_div_id, file_type, file_number){
   var $holder = $("#" + uploader_div_id);
   if($holder.find(".row").length == 0)
   {
-   $holder.append("<div class='row item_row'></div>"); 
+   $holder.append("<div class='row item_row'></div>");
   }
   var $last_row = $holder.find(".row").last();
   if($last_row.find(".col-sm-2").length == 6){
@@ -705,19 +705,19 @@ function create_preview_of_file(file, uploader_div_id, file_type, file_number){
   }
   else{
     $last_col.html(get_new_portlet("show-edit-video-btn", "delete-video-btn", file_number));
-    $last_col.addClass("video_col").addClass("item_col"); 
+    $last_col.addClass("video_col").addClass("item_col");
   }
   var file_id = Math.random().toString(36).substr(2, 35);
   $last_col.attr("id", file_id);
   if(file_type == "image"){
     if(file.name != undefined){
       // file is a file
-      var reader = new FileReader();  
+      var reader = new FileReader();
       reader.onload = function (event) {
         var image = new Image();
         image.src = event.target.result;
         $(image).attr("style", "width : 100%; min-height: 105px;");
-        
+
         $(image).attr("id", "original_img_" + file_id);
         $last_col.find(".portlet-content").html($(image));
         $last_col.find(".show-edit-image-btn").data("id", file_id);
@@ -744,7 +744,7 @@ function create_preview_of_file(file, uploader_div_id, file_type, file_number){
         $last_col.find(".portlet-content").html($video);
         var video = document.getElementById("original_video_" + file_id);
         $last_col.find(".show-edit-video-btn").data("id", file_id);
-        
+
       };
       reader.readAsDataURL(file);
     }
@@ -859,14 +859,14 @@ function place_text_over_canvas(text, canvas_id, top, left, font_size, font_name
 
 //Other Used Functions
 
-/* 
+/*
   Tasks for tomorrow:
   1. create div#all_uploaded_images to contain all the img tags after edit in the uploaded image and other uploaded images that are without any effects.
   2. Add code here to add images to a div#all_uploaded_images after the "Save Changes" button is clicked over the image edit modal.
   3. Add code to get all the img tags in div#all_uploaded_images, get their src attribute which will be the base64 images and make an ajax call to upload those to server
 
   4. Add code to crop a video, for that we need to save the duration of the video added in sample template and provide that duration to user so that user can pick the part of video uploaded by him with same duration.
-  5. Add code to upload the video using ajax call. 
+  5. Add code to upload the video using ajax call.
 
   6. Add code to pre-load already added files to plupload widget
   <li class="plupload_file ui-state-default plupload_delete" id="o_1a9m762idhjalcs11379ef1vauo" style="width:100px;"><div class="plupload_file_thumb plupload_thumb_embedded" style="width: 100px; height: 60px;"><div class="plupload_file_dummy ui-widget-content" style="line-height: 60px;"><span class="ui-state-disabled">png </span></div><canvas width="100" height="60" id="uid_1a9m762m51ci2137fqdgiclgir_canvas"></canvas></div><div class="plupload_file_status"><div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div><span class="plupload_file_percent"> </span></div><div class="plupload_file_name" title="Fitness.png"><span class="plupload_file_name_wrapper">Fitness.png </span></div><div class="plupload_file_action"><div class="plupload_action_icon fa fa-minus-square"> </div><div class="show-edit-image-btn fa fa-pencil-square" data-id="o_1a9m762idhjalcs11379ef1vauo"> </div></div><div class="plupload_file_size">223 kb </div><div class="plupload_file_fields"> </div></li>
@@ -897,7 +897,7 @@ function reset_image_manipulation_modal(){
     crop_data: {width: '', height: '', x: '', y: '', is_done: false},
     added_texts: [],
     added_steakers: []
-  } 
+  }
 }
 
 function setup_sliders_for_transitions(){
@@ -937,9 +937,9 @@ function setup_cropper(){
       scalable: false,
       zoomable: false,
       minCropBoxWidth: 720,
-      minCropBoxHeight: 576,
+      minCropBoxHeight: 405,
       minCanvasWidth: 720,
-      minCanvasHeight: 576,
+      minCanvasHeight: 405,
       cropBoxResizable: false,
       viewMode: 1,
       cropend: function() {
@@ -984,7 +984,7 @@ function setup_image_edit_modal($modal, image_id_on_dom){
 
 function go_to_category_with_selected_template(category_id, template_id){
 
-  window.location.href = '/edit/' + category_id + "?template_id=" + template_id 
+  window.location.href = '/edit/' + category_id + "?template_id=" + template_id
 }
 
 function get_variations(category_id, parent_template_id){

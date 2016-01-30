@@ -20,6 +20,7 @@ import yatra_app.views as yatra_app_views
 import accounts.views as accounts_views
 from django.conf import settings
 from django.conf.urls.static import static
+import render_app.views as render_app_views
 urlpatterns = [
   url(r'^admin/', admin.site.urls),
   url(r'^$', yatra_app_views.home),
@@ -29,6 +30,7 @@ urlpatterns = [
   url(r'^upload_images/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.upload_images),
   url(r'^upload_videos/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.upload_videos),
   url(r'^render/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.render),
+  url(r'^render_process/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', render_app_views.render),
   url(r'^look_for_video/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.look_for_video),
   url(r'^receive_video$', yatra_app_views.receive_video),
   url(r'^login$', accounts_views.login),
