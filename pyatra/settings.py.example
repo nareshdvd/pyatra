@@ -37,12 +37,14 @@ INSTALLED_APPS = [
   'django.contrib.sessions',
   'django.contrib.messages',
   'django.contrib.staticfiles',
-  'yatra_app',
-  'accounts',
-  'mptt',
-  'lib',
   'django_extensions',
   'imagekit',
+  'render_app',
+  'djcelery',
+  'accounts',
+  'yatra_app',
+  'lib',
+  'mptt',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -84,10 +86,10 @@ DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'pyatra',
-    'USER': 'root',
-    'PASSWORD': 'root',
-    'HOST': 'localhost',
-    'PORT': '3306',
+    'USER' : 'root',
+    'PASSWORD' : 'pyatrapass098',
+    'HOST' : 'localhost',
+    'PORT' : 3306,
   }
 }
 
@@ -130,12 +132,24 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
   os.path.join(BASE_DIR, "static"),
-  '/var/www/static/',
 ]
 STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
-
+MAIN_SERVER = 'http://localhost:8000'
 RENDERER_SERVER = 'http://localhost:8001'
+
+BROKER_URL = 'amqp://pYaTrAuSeR:uSerpYAtra089@localhost:5672/pyatrarabbitmqvhost'
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+
+
+
+#sudo rabbitmq-server --detached
+#python manage.py celeryd
+#mysql.server start
+#
