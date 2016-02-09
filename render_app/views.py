@@ -11,7 +11,6 @@ import subprocess
 from subprocess import Popen
 from render_app.lib import process
 from render_app.tasks import delayed_process
-import requests
 import json
 # Create your views here.
 
@@ -66,11 +65,12 @@ def render_project(video_session_id, zipped_project_file):
   project_path = os.path.join(video_session_dir, project_name)
   template_file_path = os.path.join(project_path, 'template.aep')
   output_file_path = os.path.join(video_session_dir, 'final_video.mp4')
-  rendered = render_process(template_file_path, output_file_path)
+  rendered = render_process(video_session_id, template_file_path, output_file_path)
   return True
 
 
-def render_process(template_file_path, output_file_path):
+def render_process(video_session_id, template_file_path, output_file_path):
+  output_file_mp4_path = output_file_path.replace('.mov','.mp4')
   process_params = [
     r'/Applications/Adobe After Effects CC 2014/aerender',
     '-project',
@@ -79,7 +79,25 @@ def render_process(template_file_path, output_file_path):
     'final_comp',
     '-mp',
     '-output',
-    output_file_path
+    output_file_path,
+    {
+      'next_delayed_process_params' : [
+        'ffmpeg',
+        '-i',
+        output_file_path,
+        '-q:a',
+        '0',
+        '-q:v',
+        '0',
+        output_file_mp4_path,
+        {
+          'after_finished_task' : {
+            'name' : 'send_notification_about_video_generated',
+            'params' : [video_session_id, output_file_mp4_path]
+          }
+        }
+      ]
+    }
   ]
   print "I M IN DELAYED PROCESS START PROCESS"
   delayed_process.delay(process_params)

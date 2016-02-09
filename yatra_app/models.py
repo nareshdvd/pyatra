@@ -111,6 +111,9 @@ class VideoSession(models.Model):
   video_template = models.ForeignKey(VideoTemplate, related_name = 'template_video_sessions')
   video_category = models.ForeignKey(Category, related_name = 'category_video_sessions')
   final_video = models.FileField(upload_to=final_video_relative_upload_path, null = True, blank = True, default = '')
+  rendering_started = models.BooleanField(default=False)
+  rendering_finished = models.BooleanField(default=False)
+  rendering_percentage = models.IntegerField(default=0)
 
   def save_final_video(self, mp4_file):
     if self.final_video and os.path.exists(self.final_video.path):
@@ -209,6 +212,8 @@ class VideoSession(models.Model):
     zipped_project_path = self.zip_the_project()
     files = {'zipped_project': open(zipped_project_path, 'rb')}
     r = requests.post("{}/{}/{}/{}".format(RENDERER_SERVER, 'render_process', category_id, template_id), files = files, data = {'category_id' : category_id, 'template_id' : template_id, 'video_session_id' : self.id})
+    self.rendering_started = True
+    self.save()
 
   def zip_the_project(self):
     if os.path.exists(self.project_dir() + ".zip"):

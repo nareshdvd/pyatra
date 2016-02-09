@@ -406,6 +406,7 @@ $(document).on("click", ".place-text-btn", function(){
   place_text_over_canvas($("#text-instance").html(), temp_image_id, top, left, 18, 'arial');
 });
 
+var socket_events = []
 $(document).on("click", ".select-template-link", function(){
   var $this = $(this);
   var template_id = $this.data("template_id");
@@ -415,9 +416,20 @@ $(document).on("click", ".select-template-link", function(){
     type: 'get',
     data: {},
     success: function(retdata){
-      console.log("i m here");
       current_template_items_info = retdata.items;
       generate_ui_for_uploaders(template_id, category_id);
+      if(socket_events.indexOf(retdata.video_session_id) == -1){
+        socket_events.push(retdata.video_session_id);
+        var socket = io('http://52.35.43.224:3000');
+        socket.on("some event", function(data){
+          console.log(data);
+          if(data['for'] == retdata.video_session_id){
+            $("#final_video").append("<source src='/media/" + data.final_video + "' type='video/mp4'></source>")
+            $("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
+            videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
+          }
+        });
+      }
     }
   });
 });
@@ -584,13 +596,6 @@ $(document).on("click", "#render_session", function(){
     data: {},
     type: "post",
     success: function(retdata){
-      console.log(retdata);
-      fetch_video_interval = setInterval(function(){
-        if(!got_the_video){
-          after_render_procedure(category_id, template_id)
-        }
-      }, 3000);
-      after_render_procedure();
     }
   })
 });
@@ -626,26 +631,6 @@ $(document).on("click", ".play_video_select", function(){
   videojs("play_video_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
   $("#play-video-modal").modal("show");
 });
-
-function after_render_procedure(category_id, template_id){
-  if(category_id != undefined && template_id != undefined){
-    $.ajax({
-      url: '/look_for_video/' + category_id + '/' + template_id,
-      data: {},
-      type: 'get',
-      success: function(retdata){
-        if(retdata.video_generated == true){
-          got_the_video = true;
-          video_path = retdata.video_path;
-          $("#final_video").append("<source src='" + video_path + "' type='video/mp4'></source>")
-          $("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
-          videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
-          clearInterval(fetch_video_interval);
-        }
-      }
-    });
-  }
-}
 
 function update_changes_to_original_image(temp_image_id){
   var object_id = temp_image_id.replace("temp_img_", "");

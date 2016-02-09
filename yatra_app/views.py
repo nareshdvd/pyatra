@@ -60,7 +60,7 @@ def upload_images(request, category_id, template_id):
         if str(file_name_number) != str(item["item_number"]):
           # file is replaced
           session_item = video_session.session_items.filter(item_number=item["item_number"]).first()
-          session_item.replace_from_temp(file_name_number)  
+          session_item.replace_from_temp(file_name_number)
       else:
         session_item = video_session.session_items.filter(item_number=item["item_number"]).first()
         session_item.save_item_file(item["item_file"])
@@ -104,6 +104,14 @@ def look_for_video(request, category_id, template_id):
   else:
     retdata['video_generated'] = False
   return HttpResponse(json.dumps(retdata), content_type = "application/json")
+
+@csrf_exempt
+def render_finished(request, video_session_id):
+  video_session = VideoSession.objects.get(pk = video_session_id)
+  output_file = request.FILES['output_file']
+  video_session.rendering_finished  = True
+  video_session.save_final_video(output_file)
+  return HttpResponse(json.dumps({'status' : True}), content_type = "application/json")
 
 def upload_videos(request, template_id):
   videos = request.FILES.getlist('dropzone_videos')
