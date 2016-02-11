@@ -26,6 +26,9 @@ class Category(models.Model):
   def __str__(self):
     return self.title
 
+  def concatenated_title(self):
+    return "_".join(self.title.split(" "))
+
   def parent_templates(self):
     return self.video_templates.filter(parent_id=None)
 
@@ -93,6 +96,7 @@ class VideoTemplate(MPTTModel):
           extract_dir
         ])
         extension = '.tar'
+    change_permissions_recursive(extract_dir, 0777)
   def project_dir_name(self):
     return self.compressed_file.path.split('/')[-1].split(".")[0]
 
@@ -153,9 +157,7 @@ class VideoSession(models.Model):
     print self.extract_dir(False)
     if not os.path.exists(self.extract_dir(False)):
       os.mkdir(self.extract_dir(False))
-      print "I M HERE IN AFTER SAVE OF VIDEO SESSION"
-      os.chmod(self.extract_dir(False), 0777)
-      print "CHANGED MODE"
+      change_permissions_recursive(self.extract_dir(False), 0777)
     self.video_template.extract_project(self.extract_dir(False), False)
 
   def move_files_to_temp(self):
@@ -164,11 +166,13 @@ class VideoSession(models.Model):
       print "deleting temp directory"
       shutil.rmtree(temp_dir_name)
     os.mkdir(temp_dir_name)
+    change_permissions_recursive(temp_dir_name, 0777)
     for session_item in self.session_items.all():
       if session_item.item_file and os.path.exists(session_item.item_file.path):
         shutil.copy(session_item.item_file.path, temp_dir_name)
         if session_item.item_type != "image":
           shutil.copy(session_item.webm_path(), temp_dir_name)
+    change_permissions_recursive(temp_dir_name, 0777)
 
 
   def add_session_items(self):
@@ -385,8 +389,15 @@ class SessionItem(models.Model):
     #checking if the file exists as it was previously extracted from archive and then removing it
     if os.path.exists(session_item_absolute_upload_path(self, ".".join([str(self.item_number), ext]))):
       os.remove(session_item_absolute_upload_path(self, ".".join([str(self.item_number), ext])))
+    if os.path.exists(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'mp4']))):
+      os.remove(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'mp4'])))
+    if os.path.exists(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'jpeg']))):
+      os.remove(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'jpeg'])))
+    if os.path.exists(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'webm']))):
+      os.remove(session_item_absolute_upload_path(self, ".".join([str(self.item_number), 'webm'])))
     self.item_file = uploaded_file
     self.save()
+    change_permissions_of_file(self.item_file.path, 0777)
 
   def handle_file_conversions(self):
     if self.item_file and os.path.exists(self.item_file.path):
@@ -400,11 +411,13 @@ class SessionItem(models.Model):
             os.rename(self.item_file.path, new_file_path)
             self.item_file = media_relative_path(new_file_path)
             self.save()
+            change_permissions_of_file(self.item_file.path, 0777)
           elif ext == 'png':
             new_file_path = convert_png_to_jpeg(self.item_file.path)
             os.remove(self.item_file.path)
             self.item_file = media_relative_path(new_file_path)
             self.save()
+            change_permissions_of_file(self.item_file.path, 0777)
         else:
           new_file_path = self.item_file.path
         new_file = open(new_file_path)
@@ -423,7 +436,7 @@ class SessionItem(models.Model):
             self.item_file = media_relative_path(new_file_path)
             self.prevent_callback = True
             self.save()
-
+            change_permissions_of_file(self.item_file.path, 0777)
           elif ext == 'avi':
             new_file_path = convert_video(self.item_file.path, 'avi', 'mp4')
             os.remove(self.item_file.path)
@@ -431,7 +444,7 @@ class SessionItem(models.Model):
             self.item_file = media_relative_path(new_file_path)
             self.prevent_callback = True
             self.save()
-
+            change_permissions_of_file(self.item_file.path, 0777)
           elif ext == 'mpeg' or ext == 'mpg':
             new_file_path = convert_video(self.item_file.path, 'mpeg', 'mp4')
             os.remove(self.item_file.path)
@@ -439,7 +452,7 @@ class SessionItem(models.Model):
             self.item_file = media_relative_path(new_file_path)
             self.prevent_callback = True
             self.save()
-
+            change_permissions_of_file(self.item_file.path, 0777)
           elif ext == 'wmv':
             new_file_path = convert_video(self.item_file.path, 'wmv', 'mp4')
             os.remove(self.item_file.path)
@@ -447,15 +460,18 @@ class SessionItem(models.Model):
             self.item_file = media_relative_path(new_file_path)
             self.prevent_callback = True
             self.save()
+            change_permissions_of_file(self.item_file.path, 0777)
           elif ext == 'webm':
             new_file_path = convert_video(self.item_file.path, 'webm', 'mp4')
             self.item_file = media_relative_path(new_file_path)
             self.prevent_callback = True
             self.save()
+            change_permissions_of_file(self.item_file.path, 0777)
         else:
           webm_path = self.webm_path()
           if webm_path is not None and not os.path.exists(self.webm_path()):
             convert_video(self.item_file.path, 'mp4', 'webm')
+            change_permissions_of_file(webm_path, 0777)
 
 
 def post_save_for_session_item(sender, instance, **kwargs):
@@ -614,3 +630,19 @@ class Steaker(models.Model):
 def get_values_array(items, key):
   from operator import itemgetter
   return map(itemgetter(key), items)
+
+
+def change_permissions_recursive(path, mode):
+  os.chmod(path, mode)
+  print "Changing mode of DIR" + path
+  for root, dirs, files in os.walk(path, topdown=False):
+    for dir in [os.path.join(root,d) for d in dirs]:
+      print "Changing mode of DIR" + dir
+      os.chmod(dir, mode)
+    for file in [os.path.join(root, f) for f in files]:
+      print "Changing mode of FILE" + file
+      os.chmod(file, mode)
+
+def change_permissions_of_file(path, mode):
+  os.chmod(path, mode)
+  print "Changing mode of FILE" + path

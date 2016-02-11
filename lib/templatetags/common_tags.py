@@ -4,7 +4,7 @@ register = template.Library()
 
 @register.filter('get_template_category_names')
 def get_template_category_names(template, separator):
-  return ' '.join(map(lambda x: x['title'].lower(), template.categories.values('title')))
+  return ' '.join(map(lambda x: '_'.join(x['title'].lower().split(" ")), template.categories.values('title')))
 
 
 @register.filter('grouped_in')

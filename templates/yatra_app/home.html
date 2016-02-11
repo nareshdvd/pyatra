@@ -18,7 +18,7 @@
                 <ul id="options">
                   <li><a data-category_id="0" data-filter="*" href="#" class="category_menu_item selected">All</a></li>
                   {% for category in categories %}
-                    <li><a data-category_id="{{category.id}}" data-filter=".{{category.title|lower}}" href="#" class="category_menu_item">{{category.title}}</a></li>
+                    <li><a data-category_id="{{category.id}}" data-filter=".{{category.concatenated_title|lower}}" href="#" class="category_menu_item">{{category.title}}</a></li>
                   {% endfor %}
                   <li class="f-right"><a data-filter=".professional" href="#">Free</a></li>
                   <li class="f-right"><a data-filter=".wedding" href="#">Paid</a></li>
