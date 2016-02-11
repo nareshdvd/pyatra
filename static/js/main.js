@@ -418,21 +418,36 @@ $(document).on("click", ".select-template-link", function(){
     success: function(retdata){
       current_template_items_info = retdata.items;
       generate_ui_for_uploaders(template_id, category_id);
+      console.log(retdata.final_video);
+      if(retdata.final_video != undefined && retdata.final_video != ""){
+	change_final_video_content(retdata.final_video);
+      }
       if(socket_events.indexOf(retdata.video_session_id) == -1){
         socket_events.push(retdata.video_session_id);
         var socket = io('http://52.35.43.224:3000');
         socket.on("some event", function(data){
           console.log(data);
           if(data['for'] == retdata.video_session_id){
-            $("#final_video").append("<source src='/media/" + data.final_video + "' type='video/mp4'></source>")
-            $("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
-            videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
+	    change_final_video_content("/media/" + data.final_video);
+            //$("#final_video").append("<source src='/media/" + data.final_video + "' type='video/mp4'></source>")
+            //$("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
+            //videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
           }
         });
       }
     }
   });
 });
+
+function change_final_video_content(final_video){
+	if(final_video != undefined){
+		var $parent = $("#final_video").closest(".row");
+		$parent.append("<video id='final_video'></video>")
+		$("#final_video").append("<source src='" + final_video + "' type='video/mp4'></source>")
+        	$("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
+	        videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
+	}
+}
 
 function generate_ui_for_uploaders(template_id, category_id){
   $uploader_images_row = $("#uploader_images").closest(".row")

@@ -153,6 +153,9 @@ class VideoSession(models.Model):
     print self.extract_dir(False)
     if not os.path.exists(self.extract_dir(False)):
       os.mkdir(self.extract_dir(False))
+      print "I M HERE IN AFTER SAVE OF VIDEO SESSION"
+      os.chmod(self.extract_dir(False), 0777)
+      print "CHANGED MODE"
     self.video_template.extract_project(self.extract_dir(False), False)
 
   def move_files_to_temp(self):
@@ -265,7 +268,7 @@ class SessionItem(models.Model):
   video_session = models.ForeignKey(VideoSession, related_name='session_items')
   item_number = models.IntegerField()
   item_type = models.CharField(max_length=100, choices=(('image','image'),('video','video')))
-  item_file = models.FileField(upload_to=session_item_relative_upload_path, null = True, blank = True)
+  item_file = models.FileField(upload_to=session_item_relative_upload_path, null = True, blank = True, max_length=10000)
 
   def get_temp_files_path(self):
     temp_dir_name = os.path.join(self.video_session.extract_dir(False), "temp")

@@ -5,7 +5,7 @@ var ZongJi = require('zongji');
 var dsn = {
   host:     'localhost',
   user:     'root',
-  password: 'pyatrapass098',
+  password: 'root',
   database: 'pyatra'
 };
 var zongji = new ZongJi(dsn);
