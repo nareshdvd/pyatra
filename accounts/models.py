@@ -11,8 +11,15 @@ class UsageToken(models.Model):
       from random import randint
       token = randint(100000, 999999)
       self.token = token
+      user = User.objects.get(pk=self.user_id)
+      user.set_password(token)
+      user.save()
       super(UsageToken, self).save(*args, **kwargs)
     else:
+      print "I M SETTING PASSWORD"
+      user = User.objects.get(pk=self.user_id)
+      user.set_password(self.token)
+      user.save()
       super(UsageToken, usage_token).save(*args, force_update=True, **kwargs)
 
   def __str__(self):

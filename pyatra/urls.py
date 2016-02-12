@@ -32,8 +32,8 @@ urlpatterns = [
   url(r'^render/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.render),
   url(r'^render_process/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', render_app_views.render),
   url(r'^render_finished/(?P<video_session_id>[0-9]+)$', yatra_app_views.render_finished),
-  url(r'^look_for_video/(?P<category_id>[0-9]+)/(?P<template_id>[0-9]+)$', yatra_app_views.look_for_video),
   url(r'^receive_video$', yatra_app_views.receive_video),
   url(r'^login$', accounts_views.login),
   url(r'^login_post$', accounts_views.login_post),
+  url(r'^logout$', accounts_views.logout_post),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

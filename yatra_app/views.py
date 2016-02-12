@@ -27,14 +27,11 @@ def edit(request, id):
 def variations(request, category_id, template_id):
   parent_v_template = VideoTemplate.objects.get(id=template_id)
   variations_with_self = parent_v_template.variations_with_self()
-  user = get_logged_in_user()
-  #parent_template_variation_sessions = VideoSession.user_parent_template_variation_sessions(user.id, parent_v_template)
-  #print parent_template_variation_sessions
   category = Category.objects.get(pk = category_id)
   return render_to_response('yatra_app/_variations.html', {'parent_v_template' : parent_v_template, 'category' : category, 'variations_with_self' : variations_with_self}, RequestContext(request))
 
 def select_variation(request, category_id, template_id):
-  user = get_logged_in_user()
+  user = get_logged_in_user(request)
   template = VideoTemplate.objects.get(pk = template_id)
   category = Category.objects.get(pk = category_id)
   video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
@@ -45,7 +42,7 @@ def select_variation(request, category_id, template_id):
 
 
 def upload_images(request, category_id, template_id):
-  user = get_logged_in_user()
+  user = get_logged_in_user(request)
   images = parse(request.POST.urlencode(), normalized=True)
   video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
   category = Category.objects.get(pk = category_id)
@@ -78,7 +75,7 @@ def upload_images(request, category_id, template_id):
   return HttpResponse(response_json, content_type = 'application/json')
 
 def render(request, category_id, template_id):
-  user = get_logged_in_user()
+  user = get_logged_in_user(request)
   video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
   video_session.render(category_id, template_id)
   return HttpResponse(json.dumps({"status" : "ok"}), content_type = 'application/json')
@@ -94,17 +91,6 @@ def receive_video(request):
   return HttpResponse(json.dumps({'status' : "OK"}), content_type = 'application/json')
   # return HttpResponse(json.dumps({"final_video" : video_session.final_video.url}), content_type = "application/json")
 
-def look_for_video(request, category_id, template_id):
-  user = get_logged_in_user()
-  video_session = user.video_sessions.filter(video_category_id=category_id, video_template_id=template_id).first()
-  retdata = {}
-  if video_session.final_video:
-    retdata['video_generated'] = True
-    retdata['video_path'] = video_session.final_video.url
-  else:
-    retdata['video_generated'] = False
-  return HttpResponse(json.dumps(retdata), content_type = "application/json")
-
 @csrf_exempt
 def render_finished(request, video_session_id):
   video_session = VideoSession.objects.get(pk = video_session_id)
@@ -117,8 +103,8 @@ def upload_videos(request, template_id):
   videos = request.FILES.getlist('dropzone_videos')
   return HttpResponse("OK");
 
-def get_logged_in_user():
-  return User.objects.get(pk=2)
+def get_logged_in_user(request):
+  return request.user
 
 # convert valuesqueryset to dict
 def ValuesQuerySetToDict(vqs):

@@ -13,7 +13,6 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-var csrftoken = getCookie('csrftoken');
 
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -22,7 +21,9 @@ function csrfSafeMethod(method) {
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            var csrftoken = getCookie('csrftoken');
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            console.log(xhr);
         }
         $("#ajax-loader").css("height", getActualWidth() + "px")
         $("#ajax-loader").show();
@@ -291,7 +292,9 @@ var current_template_items_info;
 $(document).on("ready", function(){
 	var template_id = $(".parent_templates").find(".item.active").data('template_id');
   var category_id = $(".parent_templates").data('category_id');
-	get_variations(category_id, template_id);
+  if(category_id != undefined && template_id != undefined){
+	 get_variations(category_id, template_id);
+  }
 	$(".carousel").carousel('pause');
 	$(".carousel").on('slid.bs.carousel', function (a, b) {
 	  var template_id = $(this).find(".item.active").data('template_id');
@@ -407,10 +410,7 @@ $(document).on("click", ".place-text-btn", function(){
 });
 
 var socket_events = []
-$(document).on("click", ".select-template-link", function(){
-  var $this = $(this);
-  var template_id = $this.data("template_id");
-  var category_id = $this.data("category_id");
+function select_variation(category_id, template_id){
   $.ajax({
     url: '/select_variation/' + category_id + "/" + template_id,
     type: 'get',
@@ -418,9 +418,8 @@ $(document).on("click", ".select-template-link", function(){
     success: function(retdata){
       current_template_items_info = retdata.items;
       generate_ui_for_uploaders(template_id, category_id);
-      console.log(retdata.final_video);
       if(retdata.final_video != undefined && retdata.final_video != ""){
-	change_final_video_content(retdata.final_video);
+        change_final_video_content(retdata.final_video);
       }
       if(socket_events.indexOf(retdata.video_session_id) == -1){
         socket_events.push(retdata.video_session_id);
@@ -428,15 +427,19 @@ $(document).on("click", ".select-template-link", function(){
         socket.on("some event", function(data){
           console.log(data);
           if(data['for'] == retdata.video_session_id){
-	    change_final_video_content("/media/" + data.final_video);
-            //$("#final_video").append("<source src='/media/" + data.final_video + "' type='video/mp4'></source>")
-            //$("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
-            //videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
+            change_final_video_content("/media/" + data.final_video);
           }
         });
       }
     }
   });
+}
+
+$(document).on("click", ".select-template-link", function(){
+  var $this = $(this);
+  var template_id = $this.data("template_id");
+  var category_id = $this.data("category_id");
+  check_login_and_proceed(select_variation, [category_id, template_id])
 });
 
 function change_final_video_content(final_video){
@@ -512,6 +515,53 @@ $(document).on("click", ".update_changes_to_original_image", function(e){
   $("#edit-image-modal").modal("hide");
 });
 
+$(document).on("click", ".ajax-submit", function(){
+  var $ajax_submit_btn = $(this);
+  $form = $("#" + $ajax_submit_btn.data("formid"));
+  var after_login_callback = $ajax_submit_btn.data("after_login_callback");
+  var callback_params = $ajax_submit_btn.data("callback_params");
+  $.ajax({
+    url: "/login_post",
+    type: "post",
+    data: $form.serialize(),
+    success: function(retdata){
+      if(retdata.status == "success"){
+        $(".modal-small").modal("hide");
+        if(after_login_callback != undefined){
+          if(callback_params != undefined){
+            after_login_callback.apply(after_login_callback, callback_params)    
+          }
+          else{
+            after_login_callback()
+          }
+        }
+        $("body").addClass("lin");
+        $("#logout-li").html('<a href="javascript: void(0);" data-href="/logout" id="logout">Logout</a>');
+      }
+      else{
+        $form.find(".alert").remove();
+        $form.prepend("<div class='alert alert-danger'>Incorrect login details</div>");
+      }
+    }
+  });
+});
+$(document).on('hidden.bs.modal', ".modal-small", function () {
+  $(this).remove(); 
+});
+
+$(document).on("click", "#logout", function(){
+  $.ajax({
+    url: '/logout',
+    type: 'post',
+    success: function(retdata){
+      if(retdata.status == 'success'){
+        window.location.reload()
+      }
+    }
+  })
+});
+
+
 $(document).on("hidden.bs.modal", "#edit-image-modal", function(){
   var $modal = $("#edit-image-modal");
   var temp_image_id = get_temp_image_id();
@@ -521,13 +571,39 @@ $(document).on("hidden.bs.modal", "#edit-image-modal", function(){
   setup_image_edit_modal($modal, object_id);
 });
 var test;
-$(document).on("click", "#upload_added_files", function(){
+
+function check_login_and_proceed(after_login_callback, callback_params){
+  if(!$("body").hasClass("lin")){
+    $.ajax({
+      url: '/login',
+      type: 'get',
+      success: function(retdata){
+        $("body").find(".modal-small").remove();
+        $("body").append(retdata);
+        $(".modal-small").modal("show");
+        $ajax_submit_btn = $(".modal-small").find(".ajax-submit");
+        $ajax_submit_btn.data("after_login_callback", after_login_callback);
+        $ajax_submit_btn.data("callback_params", callback_params);
+      }
+    });
+  }
+  else{
+    if(after_login_callback != undefined){
+      if(callback_params != undefined){
+        after_login_callback.apply(after_login_callback, callback_params)    
+      }
+      else{
+        after_login_callback()
+      }
+    }
+  }
+}
+
+function upload_added_files(category_id, template_id){
   var all_data_to_upload = [];
   var sorted_image_ids = [];
   var sorted_video_ids = [];
   var combined_sorted_ids = [];
-  var category_id = $(this).data("category_id");
-  var template_id = $(this).data("template_id");
   $("#uploader_images").find(".item_row").each(function(){
     var $item_row = $(this);
     sorted_image_ids.push($item_row.sortable("toArray"));
@@ -582,6 +658,12 @@ $(document).on("click", "#upload_added_files", function(){
       });
     }
   });
+}
+
+$(document).on("click", "#upload_added_files", function(){
+  var category_id = $(this).data("category_id");
+  var template_id = $(this).data("template_id");
+  check_login_and_proceed(upload_added_files, [category_id, template_id]);
 });
 
 $(document).on("click", ".delete-image-btn", function(){

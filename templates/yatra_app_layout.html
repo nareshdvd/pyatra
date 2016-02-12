@@ -43,7 +43,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
       <![endif]-->
   </head>
-  <body>
+  <body class="{% if not request.user.is_anonymous %}lin{% endif %}">
     <div id="st-container" class="st-container">
       <div class="st-pusher">
         {% block 'st-container' %}

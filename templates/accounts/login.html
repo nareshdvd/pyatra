@@ -1,0 +1,19 @@
+{% extends "modal_layout.html" %}
+{% block modal_title %}
+  Please Sign in
+{% endblock %}
+{% block modal_body %}
+  <form id="login-form">
+    <div class="form-group">
+      <input type="text" name="email" class="form-control" placeholder="Email"/>
+    </div>
+    <div class="form-group">
+      <input type="password" name="token" class="form-control" placeholder="Password"/>
+    </div>
+  </form>
+{% endblock %}
+{% block modal_footer %}
+  <button data-formid="login-form" type="submit" class="btn btn-default ajax-submit">Sign In</button>
+  <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="button" class="btn btn-primary">Save changes</button> -->
+{% endblock %}
