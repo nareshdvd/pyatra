@@ -7,6 +7,8 @@ from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 import json
+
+from django.views.decorators.csrf import ensure_csrf_cookie
 def login(request):
   response_dict = {}
   return render_to_response('accounts/login.html', response_dict, RequestContext(request))

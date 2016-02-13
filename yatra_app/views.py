@@ -1,4 +1,5 @@
 from django.shortcuts import render, render_to_response
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse
 from django.template import RequestContext
 from yatra_app.models import Category, VideoTemplate, VideoSession, SessionItem, Steaker
@@ -7,11 +8,14 @@ import json
 from IPython import embed
 from django.db.models import Q
 from lib.parser.parser import *
+
+@ensure_csrf_cookie
 def home(request):
   categories = Category.objects.all()
   parent_templates = VideoTemplate.get_only_parent_templates()
   return render_to_response('yatra_app/home.html', {'categories' : categories, 'parent_templates' : parent_templates}, RequestContext(request))
 
+@ensure_csrf_cookie
 def edit(request, id):
   image_edit_modal_needed = True
   video_edit_modal_needed = True
@@ -24,12 +28,14 @@ def edit(request, id):
   steakers = Steaker.objects.all()
   return render_to_response('yatra_app/category.html', {'all_categories': all_categories, 'category' : category, 'template_id' : template_id, 'steakers' : steakers, 'image_edit_modal_needed' : image_edit_modal_needed, 'video_edit_modal_needed' : video_edit_modal_needed}, RequestContext(request))
 
+@ensure_csrf_cookie
 def variations(request, category_id, template_id):
   parent_v_template = VideoTemplate.objects.get(id=template_id)
   variations_with_self = parent_v_template.variations_with_self()
   category = Category.objects.get(pk = category_id)
   return render_to_response('yatra_app/_variations.html', {'parent_v_template' : parent_v_template, 'category' : category, 'variations_with_self' : variations_with_self}, RequestContext(request))
 
+@ensure_csrf_cookie
 def select_variation(request, category_id, template_id):
   user = get_logged_in_user(request)
   template = VideoTemplate.objects.get(pk = template_id)
