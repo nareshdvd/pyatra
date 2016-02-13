@@ -445,6 +445,7 @@ function rendering_in_progress_procedure(){
   htm +=      '<img src="/static/images/ajax_loader.gif">'
   htm +=    "</div>";
   $final_video_container.html(htm);
+  $("#render_session").remove();
 }
 
 $(document).on("click", ".select-template-link", function(){
