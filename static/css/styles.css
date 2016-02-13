@@ -19277,6 +19277,7 @@ margin-top: 1%;}
 
 .temp_modal_video{
   width: 720px !important;
+  margin: 0 auto;
 }
 
 #uploader_images{
