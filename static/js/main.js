@@ -708,7 +708,7 @@ $(document).on("click", "#render_session", function(){
     data: {},
     type: "post",
     success: function(retdata){
-      
+      rendering_in_progress_procedure()
     }
   })
 });
