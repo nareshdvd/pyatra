@@ -411,6 +411,7 @@ $(document).on("click", ".place-text-btn", function(){
 
 var socket_events = []
 function select_variation(category_id, template_id){
+  change_final_video_content()
   $.ajax({
     url: '/select_variation/' + category_id + "/" + template_id,
     type: 'get',
@@ -420,6 +421,9 @@ function select_variation(category_id, template_id){
       generate_ui_for_uploaders(template_id, category_id);
       if(retdata.final_video != undefined && retdata.final_video != ""){
         change_final_video_content(retdata.final_video);
+      }
+      if(retdata.rendering_started && !retdata.rendering_finished){
+        rendering_in_progress_procedure()
       }
       if(socket_events.indexOf(retdata.video_session_id) == -1){
         socket_events.push(retdata.video_session_id);
@@ -435,6 +439,14 @@ function select_variation(category_id, template_id){
   });
 }
 
+function rendering_in_progress_procedure(){
+  var $final_video_container = $("#final_video_container");
+  var htm = "<div class='ui-blocker'>";
+  htm +=      '<img src="/static/images/ajax_loader.gif">'
+  htm +=    "</div>";
+  $final_video_container.html(htm);
+}
+
 $(document).on("click", ".select-template-link", function(){
   var $this = $(this);
   var template_id = $this.data("template_id");
@@ -443,13 +455,16 @@ $(document).on("click", ".select-template-link", function(){
 });
 
 function change_final_video_content(final_video){
+  var $parent = $("#final_video_container");
 	if(final_video != undefined){
-		var $parent = $("#final_video").closest(".row");
-		$parent.append("<video id='final_video'></video>")
+		$parent.html("<video id='final_video'></video>")
 		$("#final_video").append("<source src='" + final_video + "' type='video/mp4'></source>")
         	$("#final_video").addClass("temp_modal_video video-js vjs-default-skin");
 	        videojs("final_video", {"controls": true,"autoplay": false,"preload": "true"}, function(){});
 	}
+  else{
+    $parent.find("#final_video").remove();
+  }
 }
 
 function generate_ui_for_uploaders(template_id, category_id){
@@ -693,6 +708,7 @@ $(document).on("click", "#render_session", function(){
     data: {},
     type: "post",
     success: function(retdata){
+      
     }
   })
 });
