@@ -64,7 +64,7 @@ def render_project(video_session_id, zipped_project_file):
   project_name = zipped_project_path.split("/")[-1].replace(".zip", "")
   project_path = os.path.join(video_session_dir, project_name)
   template_file_path = os.path.join(project_path, 'template.aep')
-  output_file_path = os.path.join(video_session_dir, 'final_video.mp4')
+  output_file_path = os.path.join(video_session_dir, 'final_video.mov')
   rendered = render_process(video_session_id, template_file_path, output_file_path)
   return True
 
@@ -94,9 +94,17 @@ def render_process(video_session_id, template_file_path, output_file_path):
           'after_finished_task' : {
             'name' : 'send_notification_about_video_generated',
             'params' : [video_session_id, output_file_mp4_path]
+          },
+          'on_error_task' : {
+            'name' : 'delete_file',
+            'params' : output_file_mp4_path
           }
         }
-      ]
+      ],
+      'on_error_task' : {
+        'name' : 'delete_file',
+        'params' : output_file_path
+      }
     }
   ]
   print "I M IN DELAYED PROCESS START PROCESS"
