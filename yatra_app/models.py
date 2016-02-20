@@ -118,6 +118,7 @@ class VideoSession(models.Model):
   rendering_started = models.BooleanField(default=False)
   rendering_finished = models.BooleanField(default=False)
   rendering_percentage = models.IntegerField(default=0)
+  rendering_failed = models.NullBooleanField(default=None)
 
   def save_final_video(self, mp4_file):
     if self.final_video and os.path.exists(self.final_video.path):

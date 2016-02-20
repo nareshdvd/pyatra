@@ -14,6 +14,26 @@ from render_app.tasks import delayed_process
 import json
 # Create your views here.
 
+
+@csrf_exempt
+def new_render(request, category_id, template_id):
+  video_session_id = request.POST.get('video_session_id')
+  zipped_project = request.FILES['zipped_project']
+  render_process = RenderProcess.objects.filter(session_id=video_session_id).first()
+  retdata = {}
+  if render_process == None:
+    render_server = RenderProcess.most_available()
+    render_process = render_server.processes.create(session_id=video_session_id, zipped_project=zipped_project)
+    retdata = {'status' : True}
+  elif render_process.failed_count == 6:
+    mail_error_for_this_session(video_session_id)
+    retdata = {'status' : False}
+  elif render_process.failed_count == 0 and render_process.process_state == "started":
+    retdata = {'status' : True}
+  return HttpResponse(json.dumps(retdata), content_type='application/json')
+
+
+
 @csrf_exempt
 def render(request, category_id, template_id):
   print "I m here"

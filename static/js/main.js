@@ -434,9 +434,20 @@ function select_variation(category_id, template_id){
             change_final_video_content("/media/" + data.final_video);
           }
         });
+        socket.on("rendering_failed", function(data){
+          console.log(data);
+          if(data['for'] == retdata.video_session_id){
+            show_rendering_failed_message();
+          }
+        });
       }
     }
   });
+}
+
+function show_rendering_failed_message(){
+  var $final_video_container = $("#final_video_container");
+  $final_video_container.html("Your video is not rendered due to some errors, we are looking into it, we will shortly fix the problem");
 }
 
 function rendering_in_progress_procedure(){

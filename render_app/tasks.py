@@ -2,7 +2,22 @@ from pyatra import celery_app
 from render_app.lib import process
 from render_app import after_finished_tasks
 
-
+@celery_app.task
+def delayed_process_for_render_process(render_process,params):
+  render_process.process_state="started"
+  render_process.save()
+  render_process.previous_state = "started"
+  try:
+    process(params)
+    render_process.process_state="finished"
+    render_process.save()
+    render_process.previous_state = "finished"
+  except:
+    render_process.process_state = "failed"
+    render_process.failed_count = render_process.failed_count + 1
+    render_process.save()
+    render_process.previous_state = "failed"
+  
 @celery_app.task
 def delayed_process(params):
   next_process_params = None

@@ -28,6 +28,10 @@ zongji.on('binlog', function(evt) {
             console.log("ROW CHANGED for video_session_id" + evt.rows[row]['after']['id']);
             io.emit('some event', { for: 'everyone' });
           }
+          if(evt.rows[row]['before']['rendering_failed'] == 0 && evt.rows[row]['after']['rendering_failed'] == 1){
+            console.log("rendering failed for " + evt.rows[row]['after']['id']);
+            io.emit('rendering_failed', { for: evt.rows[row]['before']['id']});
+          }
           if(evt.rows[row]['before']['final_video'] == '' && evt.rows[row]['after']['final_video'] != ''){
             console.log("ROW CHANGED for video_session_id" + evt.rows[row]['after']['final_video']);
             io.emit('some event', {for:  evt.rows[row]['before']['id'], final_video:  evt.rows[row]['after']['final_video']})

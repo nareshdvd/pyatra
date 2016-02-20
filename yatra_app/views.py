@@ -8,6 +8,7 @@ import json
 from IPython import embed
 from django.db.models import Q
 from lib.parser.parser import *
+from django.views.decorators.csrf import csrf_exempt
 
 @ensure_csrf_cookie
 def home(request):
@@ -86,7 +87,6 @@ def render(request, category_id, template_id):
   video_session.render(category_id, template_id)
   return HttpResponse(json.dumps({"status" : "ok"}), content_type = 'application/json')
 
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def receive_video(request):
@@ -104,6 +104,12 @@ def render_finished(request, video_session_id):
   video_session.rendering_finished  = True
   video_session.save_final_video(output_file)
   return HttpResponse(json.dumps({'status' : True}), content_type = "application/json")
+
+@csrf_exempt
+def render_failed(request, video_session_id):
+  video_session = VideoSession.objects.get(pk = video_session_id)
+  video_session.rendering_failed = True
+  video_session.save()
 
 def upload_videos(request, template_id):
   videos = request.FILES.getlist('dropzone_videos')
