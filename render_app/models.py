@@ -56,7 +56,7 @@ class RenderProcess(models.Model):
       return 'tar'
 
   def add_to_delayed_jobs(self):
-    extract_to = self.main_dir()
+    extract_to = self.extracted_dir_path()
     if os.path.exists(self.extracted_dir_path()):
       shutil.rmtree(self.extracted_dir_path())
     if self.is_zip_or_tar() == 'zip':
