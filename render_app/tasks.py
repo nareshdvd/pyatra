@@ -12,7 +12,8 @@ def delayed_process_for_render_process(render_process,params):
     render_process.process_state="finished"
     render_process.save()
     render_process.previous_state = "finished"
-  except:
+  except Exception as ex:
+    print ex.message
     render_process.process_state = "failed"
     render_process.failed_count = render_process.failed_count + 1
     render_process.save()

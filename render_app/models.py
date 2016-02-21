@@ -47,7 +47,7 @@ class RenderProcess(models.Model):
     return os.path.join(self.main_dir(), self.dir_name(), 'template.aep')
 
   def output_file_ext_path(self, ext):
-    os.path.join(self.main_dir(), 'output.{}'.format(ext))
+    return os.path.join(self.main_dir(), 'output.{}'.format(ext))
 
   def is_zip_or_tar(self):
     if self.zipped_project.path.endswith('.zip'):
@@ -58,6 +58,7 @@ class RenderProcess(models.Model):
   def add_to_delayed_jobs(self):
     extract_to = self.extracted_dir_path()
     if os.path.exists(self.extracted_dir_path()):
+      print "DELETING OLD EXTRACTED DIRECTORY"
       shutil.rmtree(self.extracted_dir_path())
     if self.is_zip_or_tar() == 'zip':
       app_process(['unzip', self.zipped_project.path, '-d', extract_to])
@@ -72,12 +73,14 @@ def post_save_for_render_process(sender, instance, **kwargs):
         app_process(['ffmpeg', '-i', instance.output_file_ext_path("mov"), '-q:a', '0', '-q:v', '0', instance.output_file_ext_path("mp4")])
         app_process(["ffmpeg", "-i", instance.output_file_ext_path("mp4"), "-acodec", "libvorbis", "-aq", "5", "-ac", "2", "-qmax", "25", "-threads", "2", instance.output_file_ext_path("webm")])
         files = {'output_file': open(instance.output_file_ext_path("mp4"), 'rb'), 'webm_file' : open(instance.output_file_ext_path('webm'), 'rb')}
-        r = requests.post("{}/{}/{}".format(MAIN_SERVER, 'render_finished', video_session_id), files = files, data = {'video_session_id' : instance.session_id})
+        print "making request to" + "{}/{}/{}".format(MAIN_SERVER, 'render_finished', instance.session_id)
+        r = requests.post("{}/{}/{}".format(MAIN_SERVER, 'render_finished', instance.session_id), files = files, data = {'video_session_id' : instance.session_id})
       elif instance.process_state == "failed" and instance.failed_count < 6:
         instance.add_to_delayed_jobs()
       elif instance.process_state == "failed" and instance.failed_count == 6:
-        r = requests.post("{}/{}/{}".format(MAIN_SERVER, 'render_failed', video_session_id))
+        r = requests.post("{}/{}/{}".format(MAIN_SERVER, 'render_failed', instance.session_id))
   except:
-    instance.add_to_delayed_jobs()
+    if instance.process_state == "":
+      instance.add_to_delayed_jobs()
 
 post_save.connect(post_save_for_render_process, sender=RenderProcess)
