@@ -11,6 +11,7 @@ import subprocess
 from subprocess import Popen
 from render_app.lib import process
 from render_app.tasks import delayed_process
+from render_app.models import RenderServer, RenderProcess
 import json
 # Create your views here.
 
@@ -22,7 +23,7 @@ def new_render(request, category_id, template_id):
   render_process = RenderProcess.objects.filter(session_id=video_session_id).first()
   retdata = {}
   if render_process == None:
-    render_server = RenderProcess.most_available()
+    render_server = RenderServer.most_available()
     render_process = render_server.processes.create(session_id=video_session_id, zipped_project=zipped_project)
     retdata = {'status' : True}
   elif render_process.failed_count == 6:
@@ -32,7 +33,8 @@ def new_render(request, category_id, template_id):
     retdata = {'status' : True}
   return HttpResponse(json.dumps(retdata), content_type='application/json')
 
-
+def mail_error_for_this_session(video_session_id):
+  return True
 
 @csrf_exempt
 def render(request, category_id, template_id):
